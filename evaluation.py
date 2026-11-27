@@ -252,29 +252,21 @@ def run_evaluations(test_tasks, llm_opt, use_knowledge, library, document_retrie
 def main() -> None:
     args = parse_args()
     config = apply_cli_overrides(load_config(args.config), args)
+    principles_enabled = bool(config.bootstrap.enable_principle_library)
     if args.output_folder is None and (args.experience_library == "disabled" or args.principle_library == "disabled"
                                        or (args.library_path is not None and not config.library_path)):
-        principles_enabled = bool(getattr(config.bootstrap, "enable_principle_library", False))
         lessons_enabled = bool(config.library_path) and args.experience_library != "disabled"
         variant = {(True, False): "principles_only", (False, True): "lessons_only",
                    (False, False): "no_library", (True, True): "both"}
         config.output_folder += "_" + variant[principles_enabled, lessons_enabled]
     check_evaluation_protocol(config)
     library_source = "configured library"
-    if args.experience_library == "disabled" and not getattr(config.bootstrap, "enable_principle_library", False):
+    # Skip the lesson catalog when lessons are disabled. A custom checkpoint may supply its own principles.
+    if args.experience_library == "disabled" and (
+        not principles_enabled or config.library_path == getattr(config, "standalone_lesson_library_path", None)
+    ):
         config.library_path, config.taxonomy_path = None, None
-        library_source = "no libraries requested"
-    elif (not config.bootstrap.enable_principle_library and args.library_path is None
-          and getattr(config, "standalone_lesson_library_path", None)):
-        config.library_path = config.standalone_lesson_library_path
-        config.taxonomy_path = None
-        library_source = "independently trained experience library"
-        if not os.path.isfile(config.library_path):
-            raise SystemExit(
-                f"The experience-only checkpoint is missing: {config.library_path}\n"
-                "Train it with python main.py --experience-library-only or supply an independently trained "
-                "checkpoint with --library-path."
-            )
+        library_source = "configured principle library" if principles_enabled else "no libraries requested"
     principle_sources = prepare_principle_sources(
         config,
         allow_build=not args.dry_run,
@@ -287,10 +279,7 @@ def main() -> None:
         raise ValueError("The evaluation data contain no tasks with a finite reference objective.")
 
     taxonomy_path = resolve_taxonomy_path(config)
-    library = load_working_library(
-        config, principle_sources, config.library_path, taxonomy_path,
-        independent_experience=not config.bootstrap.enable_principle_library and args.experience_library == "enabled",
-    )
+    library = load_working_library(config, principle_sources, config.library_path, taxonomy_path)
     if args.experience_library == "disabled":
         library.select_types({"principle"})
     use_library = bool(library.lessons)

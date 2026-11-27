@@ -12,6 +12,7 @@ from unittest.mock import patch
 
 from omegaconf import OmegaConf
 
+import evaluation
 from src.config import MODEL, SERVICE
 from src.dataloader import DataLoader
 from src.insight_library import InsightLibrary
@@ -34,6 +35,15 @@ LAFLOR_124 LAFLOR_136 LAFLOR_144 LAFLOR_145 LAFLOR_152
 
 def read(path):
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def evaluation_inputs(flags):
+    with patch("sys.argv", ["evaluation.py", *flags]), patch("evaluation.ProgramGenerator"), \
+         patch("evaluation.run_evaluations") as run, patch("builtins.print"):
+        evaluation.main()
+    run.assert_called_once()
+    _, _, use_knowledge, library, documents, _, _ = run.call_args.args
+    return use_knowledge, library, documents
 
 
 class PublicReleaseTests(unittest.TestCase):
@@ -476,22 +486,42 @@ class PublicReleaseTests(unittest.TestCase):
             )
         )
 
-    def test_experience_only_rejects_the_joint_library(self):
-        config = OmegaConf.load(ROOT / "eval_params.yaml")
-        config.bootstrap.enable_principle_library = False
-        with self.assertRaisesRegex(ValueError, "independently"):
-            load_working_library(config, None, config.library_path, independent_experience=True)
+    def test_public_evaluation_selects_the_same_catalogs_in_all_modes(self):
+        catalogs = {kind: ROOT / f"data/libraries/{kind}s.json" for kind in ("principle", "lesson")}
+        records = {kind: read(path) for kind, path in catalogs.items()}
+        fields = ("taxonomy", "condition", "explanation", "example")
+        for flags, active in (
+            ([], {"principle", "lesson"}),
+            (["--principle-library", "disabled"], {"lesson"}),
+            (["--experience-library", "disabled"], {"principle"}),
+            (["--principle-library", "disabled", "--experience-library", "disabled"], set()),
+        ):
+            with self.subTest(flags=flags), \
+                 patch.object(InsightLibrary, "from_json_file", wraps=InsightLibrary.from_json_file) as load:
+                use_knowledge, library, documents = evaluation_inputs(flags)
+                self.assertEqual(use_knowledge, bool(active))
+                self.assertEqual(documents is not None, "principle" in active)
+                self.assertCountEqual([Path(call.args[0]).resolve() for call in load.call_args_list],
+                                      [catalogs[kind] for kind in active])
+                expected = {row["insight_id"]: tuple(row[f] for f in fields)
+                            for kind in active for row in records[kind]}
+                actual = {rule.metadata["knowledge_id"]: tuple(getattr(rule, f) for f in fields)
+                          for rule in library}
+                self.assertEqual(actual, expected)
+
+    def test_single_library_switches_select_the_requested_partition_of_a_custom_checkpoint(self):
         with tempfile.TemporaryDirectory() as folder:
             path = Path(folder) / "library.json"
-            rule = read(ROOT / "data/libraries/generic_lessons.json")[0]
-            library = InsightLibrary([rule])
-            library.save(path, checkpoint=True)
-            independent = load_working_library(config, None, path, independent_experience=True)
-            self.assertEqual((len(independent.principles), len(independent.lessons)), (0, 1))
-            library.attach_principles(InsightLibrary.from_json_file(config.bootstrap.consolidated_principles_path))
-            library.save(path, checkpoint=True)
-            with self.assertRaisesRegex(ValueError, "independently"):
-                load_working_library(config, None, path, independent_experience=True)
+            stored = InsightLibrary([read(ROOT / "data/libraries/lessons.json")[0]])
+            stored.attach_principles(InsightLibrary([read(ROOT / "data/libraries/principles.json")[0]]))
+            for rule in stored:
+                rule.condition = f"Checkpoint condition for {rule.insight_type}"
+            stored.save(path, checkpoint=True)
+            for switch, kind in (("--experience-library", "principle"), ("--principle-library", "lesson")):
+                with self.subTest(switch=switch):
+                    _, active, _ = evaluation_inputs([switch, "disabled", "--library-path", str(path)])
+                    self.assertEqual([(r.insight_type, r.condition) for r in active],
+                                     [(kind, f"Checkpoint condition for {kind}")])
 
     def test_configuration_loads_and_paper_ids_resolve(self):
         train, evaluate = (

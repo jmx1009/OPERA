@@ -7,7 +7,7 @@ import argparse
 parser = argparse.ArgumentParser(description="Learn and refine OPERA's two knowledge libraries.")
 parser.add_argument("--config", help="Training settings (default: train_config.yaml).")
 parser.add_argument("--dry-run", action="store_true", help="Validate sample and library loading without model calls.")
-parser.add_argument("--experience-library-only", action="store_true", help="Train the experience-only ablation independently, starting from the generic lessons.")
+parser.add_argument("--experience-library-only", action="store_true", help="Train a new experience library from the generic lessons with principles disabled.")
 args = parser.parse_args()
 if args.config:
     os.environ["OPERA_TRAIN_CONFIG"] = args.config

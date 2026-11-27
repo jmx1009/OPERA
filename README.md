@@ -58,14 +58,14 @@ Each evaluation run scores the same 20 public cases with the selected libraries 
 
 ### Library ablations
 
-The *Experience library only* condition learns lessons independently of the principle library. Run `python main.py --experience-library-only` on the public examples before evaluating this condition. The resulting checkpoint is written under `runs/opera_public_lessons_only/library/`. Use `--library-path` to select an independently trained checkpoint of your own.
+The evaluation switches control which published catalogs OPERA loads. Each catalog supplies the same entries and applicability conditions when used alone or together with the other library. [Principle library](data/libraries/principles.json) · [Experience library](data/libraries/lessons.json)
 
-| Configuration | Evaluation command |
-| --- | --- |
-| Both libraries | `python evaluation.py` |
-| Principle library only | `python evaluation.py --experience-library disabled` |
-| Experience library only | `python evaluation.py --principle-library disabled` |
-| No library | `python evaluation.py --principle-library disabled --experience-library disabled` |
+| Configuration | Principles | Lessons | Evaluation command |
+| --- | ---: | ---: | --- |
+| Both libraries | 210 | 363 | `python evaluation.py` |
+| Principle library only | 210 | 0 | `python evaluation.py --experience-library disabled` |
+| Experience library only | 0 | 363 | `python evaluation.py --principle-library disabled` |
+| No library | 0 | 0 | `python evaluation.py --principle-library disabled --experience-library disabled` |
 
 Each command accepts `--dry-run` to check its inputs. With the principle library enabled, retrieval uses both stored principles and task-specific insights derived from document summaries. In each of the three evaluations, all four conditions use one attempt per task and accept a finite objective within 0.1 objective units of the reference, including a zero reference. [Evaluation criterion](docs/method.md#evaluation)
 

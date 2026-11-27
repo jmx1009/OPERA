@@ -18,13 +18,9 @@ def load_previous_round_library(config, artifacts, round_number, tasks):
 
 
 def load_working_library(config, artifacts, library_path=None, taxonomy_path=None, *,
-                         historical_tasks=(), independent_experience=False):
+                         historical_tasks=()):
     library = (InsightLibrary.from_json_file(library_path, taxonomy_path)
                if library_path else InsightLibrary())
-    if independent_experience and library_path:
-        joint_lessons = Path(__file__).resolve().parents[1] / "data/libraries/lessons.json"
-        if library.principles or Path(library_path).samefile(joint_lessons):
-            raise ValueError("Experience library only requires lessons learned independently of principles.")
     library.reserve_historical_ids(historical_tasks)
     bootstrap = getattr(config, "bootstrap", None)
     if not artifacts:

@@ -1,7 +1,7 @@
 dataset: laflor_public
 data_path: data/laflor/manifest.json
-library_path: data/libraries/lessons.json
-standalone_lesson_library_path: runs/opera_public_lessons_only/library/library_refine_iter4.json
+standalone_lesson_library_path: data/libraries/lessons.json
+library_path: ${standalone_lesson_library_path}
 taxonomy_path: data/libraries/lesson_taxonomy.json
 output_folder: opera_public
 model: gpt-4o

@@ -60,7 +60,7 @@ The training and evaluation configurations set `tolerance_mode: absolute` and `t
 | LAFLOR | 46 | 58.7% |
 | All benchmarks | 737 | 86.8% micro-average, 80.1% macro-average |
 
-On the 46-task LAFLOR evaluation set, the reported mean success rates across the three evaluations are 32.6% for *No library*, 50.0% for *Principle library only*, 52.2% for *Experience library only* and 58.7% for *Both libraries*. The public catalog supports a separate demonstration on 20 named examples. [LAFLOR case catalog](../data/laflor/README.md)
+On the 46-task LAFLOR evaluation set, the reported mean success rates across the three evaluations are 32.6% for *No library*, 50.0% for *Principle library only*, 52.2% for *Experience library only* and 58.7% for *Both libraries*. The public demonstration on 20 named examples uses the 210 released principles, the 363 released lessons, both catalogs, or neither, according to the evaluation switches. [Evaluation commands](../README.md#library-ablations) · [LAFLOR case catalog](../data/laflor/README.md)
 
 ## Library provenance
 
