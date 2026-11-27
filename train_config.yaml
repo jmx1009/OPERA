@@ -1,0 +1,53 @@
+model: gpt-4o
+service: openai
+verbose: false
+run_mode: learning_only
+start_iter: 0
+resume_refinement_iter: null
+data_slice: null
+params:
+  num_iterations: 4
+  batch_size: 5
+  tolerance_mode: absolute
+  tolerance: 0.1
+  max_solution_attempts: 3
+  max_verify_attempts: 3
+  diagnosis_max_workers: 2
+  refinement_max_workers: 2
+  retrieval_batch_size: 20
+  llm_max_output_tokens: 15000
+  variant_num: 5
+dataset: laflor_public
+output_folder: opera_public
+file_paths:
+  train_data_path: data/laflor/manifest.json
+  train_output_dir: ./learning/${output_folder}/
+  lib_dir: runs/${output_folder}/library
+  metrics_log_path: ./learning/${output_folder}/iteration_metrics.json
+  initial_library_path: data/libraries/generic_lessons.json
+  initial_taxonomy_path: data/libraries/generic_taxonomy.json
+bootstrap:
+  enable_principle_library: true
+  rebuild_document_index: false
+  corpus_root: ./data/domain_corpus
+  document_index_path: data/knowledge/summaries.json
+  candidate_principles_path: data/knowledge/candidates.json
+  candidate_taxonomy_path: data/knowledge/candidate_taxonomy.json
+  consolidated_principles_path: data/libraries/initial_principles.json
+  principle_taxonomy_path: data/libraries/principle_taxonomy.json
+  chunk_words: 500
+  overlap_words: 75
+  leaf_text_chars: 2400
+  summary_group_size: 5
+  extraction_max_level: 2
+  max_level1_units_per_doc: 8
+  max_level2_units_per_doc: 5
+  long_doc_chunk_threshold: 120
+  source_unit_selection_method: modeling_density_diversity
+  summaries_per_task: 6
+  task_specific_insight_limit: 4
+  max_candidate_principles_per_summary: 5
+ablation:
+  taxonomy: true
+  include_example: true
+  include_program_insight: true

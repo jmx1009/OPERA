@@ -1,0 +1,696 @@
+{
+  "Domain Modeling": {
+    "Facility Location": {
+      "Spatial and Range Feasibility Pre-Filtering": {
+        "definition": "Precompute binary feasibility indicators for each site or origin-facility pair. Incorporate them by either restricting the candidate set or adding constraints y_j ≤ feasible_j and x_{ij} ≤ allowed_{ij}⋅M. This eliminates infeasible options and avoids embedding complex spatial or nonlinear distance checks directly in the MIP.",
+        "condition": "When candidate facility sites or arcs are subject to multiple geometric or distance-based feasibility constraints (obstacles, setbacks, geofences, roof area, maximum range) that can be evaluated offline before optimization."
+      },
+      "Multimodal Linkage Constraints": {
+        "definition": "Pre-filter assignment variables by ground travel time ≤ T_max. For remote sites, incorporate a binary opening variable with cost and time penalty; incorporate penalty in assignment time bound using big-M. Objective includes fixed transit extension cost.",
+        "condition": "When facilities serve as intermodal transfer points with ground connectivity, and some candidate sites are remote, requiring a transit extension that adds a fixed cost and a travel time penalty."
+      },
+      "Remote Site Transit Extension Cost and Time Penalty": {
+        "definition": "Pre-filter assignment variables by ground travel time ≤ T_max. For remote sites, incorporate a binary opening variable with cost and time penalty; incorporate penalty in assignment time bound using big-M. Objective includes fixed transit extension cost.",
+        "condition": "When facilities serve as intermodal transfer points with ground connectivity, and some candidate sites are remote, requiring a transit extension that adds a fixed cost and a travel time penalty."
+      },
+      "Logit Choice with Perceptible Benefit Threshold": {
+        "definition": "Activate the logit share only if the time saving exceeds the threshold. Use a binary indicator z_i = 1 if time_saving_i ≥ threshold, enforced by logical constraints. Allocate demand proportional to z_i⋅exp(V_i)/Σ_j z_j⋅exp(V_j). Replace the logit exponential with piecewise-linear segments to maintain MILP tractability.",
+        "condition": "When demand follows a logit choice model and users exhibit a minimum perceptible benefit threshold (e.g., 25% time saving) before switching, causing nonlinearity when utility depends on decision variables."
+      },
+      "Capacity and Footprint from Design Decisions with Queueing Correction": {
+        "definition": "Model throughput as a linear function of design variables: throughput ≤ Σ (per‑unit capacity)·design_var. Derive achievable throughput from a queuing model (e.g., M/D/n) as a concave function g(pad_count) and embed via piecewise-linear segments: total arrivals ≤ g(pad_count). Enforce footprint: total area ≥ base + β·throughput; sum functional areas ≤ total area, with lower bounds from throughput. Use big-M to coup...",
+        "condition": "When facility throughput capacity, physical footprint, and functional area allocations depend on design decisions (number of pads, stands, throughput tiers), and deterministic per-unit capacity overestimates real throughput due to queueing from stochastic service times."
+      },
+      "Tiered Facility Selection with Closure, Service Gating, and Multi-Period Expansion": {
+        "definition": "Introduce binary y_{j,t} (or ω_{i,s}) with Σ_t y_{j,t} ≤ 1 (or =1 if closure is a tier). Capacity = Σ_t cap_t·y_{j,t}, fixed cost = Σ_t cost_t·y_{j,t}. Services s are allowed only for tiers that include them via z_s ≤ Σ_{t∈T_s} y_{j,t}. For closure, tier 0 provides zero capacity and zero cost; when selected, flow variables are forced to zero because positive-tier multipliers vanish. In multi-period settings, enfor...",
+        "condition": "When a facility can be opened at one of several discrete tiers that define capacity, service eligibility, and cost, possibly including a closure state and expansions over time."
+      },
+      "Multi-Echelon Facility Role Assignment": {
+        "definition": "Assign each site a type indicator (e.g., H, P, S) with binary variables. Only allow flow on arcs that respect the hierarchy (e.g., H↔P, P↔S, H↔H, P↔P; forbid H↔S). Predefine allowed adjacency matrix and restrict flow variables to those arcs.",
+        "condition": "When designing a hub-and-spoke network with three distinct facility types (aggregation, transfer, last-mile) and shipments must be routed through a transfer point before reaching a last-mile point."
+      },
+      "Bilevel Network Design with Congestion Equilibrium": {
+        "definition": "Evaluate each infrastructure decision together with the resulting user equilibrium. Allowing the planner to assign all flows directly can produce a system-optimal allocation that users would not select. A bilevel formulation preserves the dependence of route choice on infrastructure and congestion. With fixed origin–destination demand, separable, continuous, nondecreasing link costs, and standard flow-conservation constraints, the equilibrium can be represented by the traffic-assignment problem below. A KKT reformulation additionally requires the relevant regularity conditions.",
+        "condition": "This principle applies when a planner selects infrastructure in a congestible network, while users independently choose routes according to their travel costs. Infrastructure decisions must affect the feasible routes or their congestion costs."
+      },
+      "Logit Choice with Queueing-Derived Utility": {
+        "definition": "In UAM network design, passenger demand should be modeled as endogenous when operational decisions influence service quality. For each OD pair $od$, the UAM utility can include\n$$\n  U_{od}^{\\mathrm{UAM}}=-\\alpha P_{od}-\\beta\\bigl(T_{\\mathrm{flight},od}+W_k\\bigr),\n$$\nwhere $P_{od}$ is the ticket price, $T_{\\mathrm{flight},od}$ the flight time, and $W_k$ the expected queueing delay at vertiport $k$. The waiting time is obtained from a queueing model, such as $M/D/n$,\n$$\n  W_k=f(\\lambda_k,\\mu_k,n_k),\n$$\nwhere $\\lambda_k$ is the passenger arrival rate, $\\mu_k$ the service rate, and $n_k$ the number of service resources. Demand capture is then\n$$\n  D_{od}^{\\mathrm{UAM}}\n  =D_{od}\\,\\frac{\\exp\\bigl(U_{od}^{\\mathrm{UAM}}\\bigr)}\n  {\\exp\\bigl(U_{od}^{\\mathrm{UAM}}\\bigr)+\\exp\\bigl(U_{od}^{\\mathrm{ground}}\\bigr)}.\n$$\nThis creates the coupling facility decisions $\\to$ queue delay $\\to$ utility $\\to$ UAM demand. Therefore, vertiport capacity and fleet decisions cannot be optimized independently from demand. If queueing delay is ignored, the model may overestimate demand because it assumes unlimited service capacity and neglects congestion-induced disutility.",
+        "condition": "When UAM demand is not fixed but depends on passenger mode choice, and the perceived utility of UAM includes endogenous service attributes such as vertiport waiting time, which is determined by fleet size, landing pads, chargers, or scheduling decisions."
+      },
+      "Two-Stage Stochastic Facility Location": {
+        "definition": "Use a two-stage stochastic program: first-stage binary location decisions; second-stage per-scenario demand allocation variables, minimizing expected operational cost plus penalty for unmet demand. Standard stochastic facility location pattern.",
+        "condition": "When facility locations must be chosen under demand uncertainty, represented by a finite set of discrete scenarios with probabilities."
+      },
+      "Altitude-Energy and Density Optimization for Airborne Hubs": {
+        "definition": "Model sortie energy as a function of hub height h: ascent energy proportional to max(0, z_c - h), plus hover and horizontal. Density field analysis shows that higher h reduces peak density. Formulate objective (energy or time) with h as decision variable, and enforce local density constraint max_{x,y,z} ρ ≤ ρ_safe.",
+        "condition": "When an airborne fulfillment center can hover at a variable altitude and drones perform deliveries, and energy consumption/airspace density depend strongly on hub height, with a safety limit on peak drone density."
+      },
+      "Facility Grid Capacity Coupling": {
+        "definition": "Introduce binary y_j and continuous power limit P_j, with P_j ≤ M·y_j. Operational charging load per time interval must not exceed P_j. Include linear cost c_j P_j in objective.",
+        "condition": "When facility location decisions must also design electrical grid connection capacity, which limits the maximum total charging load at any time."
+      },
+      "Demand Hub Alignment Verification": {
+        "definition": "Use a catchment radius for each hub: assign each demand trip's origin and destination to the nearest hub within the radius. Only include pairs where both ends are assigned. Compute the fraction of total demand covered; if coverage is low, expand candidate hubs or add ground access arcs to avoid biased flow volumes and suboptimal network designs.",
+        "condition": "When demand is derived from mobile phone signaling data with precise coordinates and candidate hubs are discrete points, filtering OD pairs to only those where both origin and destination geocodes exactly coincide with hub locations can discard a large share of real trips, severely underestimating viable demand."
+      }
+    },
+    "Network Flow": {
+      "Node Capacity Constraints": {
+        "definition": "Build a time-expanded graph with layers t=1..T. Binary occupancy variables x_{f,s,t} for each flight f on segment s at t, and y_{f,p,t} for pad p. Arc capacity: sum_f x_{f,s,t} ≤ cap_s. Node capacity: sum_f (y_land_{f,v,t} + y_takeoff_{f,v,t}) ≤ pad_cap_v. Flight continuity via flow conservation across time. Turnaround blocking is enforced by prohibiting overlapping occupancy of a pad for the required turn duratio...",
+        "condition": "When flights must be scheduled through a network of corridors and vertiports over discrete time steps, and both corridor segments (arcs) and vertiport pads/nodes have limited capacity per time interval (occupancy slots, throughput limits). Optionally includes pad turnaround blocking."
+      },
+      "Time-Expanded Slot Network": {
+        "definition": "Build a time-expanded graph with layers t=1..T. Binary occupancy variables x_{f,s,t} for each flight f on segment s at t, and y_{f,p,t} for pad p. Arc capacity: sum_f x_{f,s,t} ≤ cap_s. Node capacity: sum_f (y_land_{f,v,t} + y_takeoff_{f,v,t}) ≤ pad_cap_v. Flight continuity via flow conservation across time. Turnaround blocking is enforced by prohibiting overlapping occupancy of a pad for the required turn duratio...",
+        "condition": "When flights must be scheduled through a network of corridors and vertiports over discrete time steps, and both corridor segments (arcs) and vertiport pads/nodes have limited capacity per time interval (occupancy slots, throughput limits). Optionally includes pad turnaround blocking."
+      },
+      "Arc Activation Constraints": {
+        "definition": "Introduce a binary parameter or variable z (arc-closure) or auth_{f,a} (flight‑specific approval). Constrain flow by f ≤ M · z or f_{f,a} ≤ M · auth_{f,a}. For weather/closures, z can be data‑driven (set to 0 when threshold exceeded); for authorization, auth is scenario‑dependent. This cleanly gates flow without altering the graph topology.",
+        "condition": "When corridor arcs or route segments have binary allowed/disallowed status due to external factors (weather closures, TFRs, NOTAMs) or regulatory authorization (e.g., LAANC), and flow must be by a Big‑M constraint so that disallowed arcs carry zero flow."
+      },
+      "Authorization-Gated Arc Activation": {
+        "definition": "Introduce a binary parameter or variable z (arc-closure) or auth_{f,a} (flight‑specific approval). Constrain flow by f ≤ M · z or f_{f,a} ≤ M · auth_{f,a}. For weather/closures, z can be data‑driven (set to 0 when threshold exceeded); for authorization, auth is scenario‑dependent. This cleanly gates flow without altering the graph topology.",
+        "condition": "When corridor arcs or route segments have binary allowed/disallowed status due to external factors (weather closures, TFRs, NOTAMs) or regulatory authorization (e.g., LAANC), and flow must be by a Big‑M constraint so that disallowed arcs carry zero flow."
+      },
+      "Geofence Arc Exclusion": {
+        "definition": "Overlay candidate arcs with geofence polygon boundaries. For each arc (i,j), if the segment intersects any geofence, either remove the arc from the graph or fix its capacity to zero. This guarantees no flight can cross a geofence without adding in‑model constraints.",
+        "condition": "When the spatial network must avoid predefined geofence polygons and any arc whose line segment intersects a geofence is infeasible. Use preprocessing to exclude non‑conformant arcs."
+      },
+      "Noise Budget Constraint": {
+        "definition": "Add a linear constraint summing noise contributions over arcs used by non‑exempt flights: ∑_{a∈A_noise} n_a · (flow from non‑exempt flights on a) ≤ noise_limit. Exempt flights are omitted from the sum, so they can operate even when the budget is exhausted.",
+        "condition": "When a cumulative noise limit (e.g., Lden budget) applies across an area, flights contribute known noise per arc, and certain flight categories (medevac) may be exempt from the budget."
+      },
+      "Noise Budget with Category Exclusions": {
+        "definition": "Add a linear constraint summing noise contributions over arcs used by non‑exempt flights: ∑_{a∈A_noise} n_a · (flow from non‑exempt flights on a) ≤ noise_limit. Exempt flights are omitted from the sum, so they can operate even when the budget is exhausted.",
+        "condition": "When a cumulative noise limit (e.g., Lden budget) applies across an area, flights contribute known noise per arc, and certain flight categories (medevac) may be exempt from the budget."
+      },
+      "Layered Altitude Network Flow": {
+        "definition": "Model the network as a set of altitude-layer subgraphs. Each subgraph contains nodes and horizontal arcs with per‑arc capacity. Vertical arcs connect corresponding nodes in adjacent layers, incurring a transition cost. This captures spatial separation and vertical off‑loading within a single unified flow graph, supporting MIP or shortest‑path formulations.",
+        "condition": "The planning domain involves navigation in a 3D space that is naturally layered (e.g., altitude bands), and congestion in one layer can be bypassed by switching to another layer via vertical arcs."
+      },
+      "Fluid Throughput Flow Approximation": {
+        "definition": "Use continuous flow variables f_{uv} (packages per hour) on arcs. Enforce flow conservation at each node and node processing throughput constraints. The resulting LP avoids integer variables and keeps facility location–allocation tractable at scale.",
+        "condition": "High‑volume small‑package drone cargo (≤5 lb items, hundreds per hour) where discrete entity tracking is unnecessary."
+      },
+      "Multi-Commodity Flow": {
+        "definition": "Define a variable flow[h,i,j] for each commodity h on arc (i,j). Arc capacity constraints sum over h: ∑_h flow[h,i,j] ≤ cap[i,j] couple the commodities. Each commodity independently satisfies flow conservation, and the objective minimizes total cost over all commodities and arcs.",
+        "condition": "When multiple distinct flow types (e.g., vehicle priority classes, package categories) traverse a shared directed network, and each arc has a finite capacity that limits the total flow across all types."
+      },
+      "Multi-Commodity Flow Conservation": {
+        "definition": "For each commodity, enforce flow conservation at every node: Σ_i f_{ij}^k + supply_{j}^k − demand_{j}^k = Σ_k f_{ji}^k. Total flow on any arc is bounded by shared capacity: Σ_k f_{ij}^k ≤ cap_{ij}. This embeds supply/demand directly in the balance equations, removes the need for separate source/sink nodes, and allows flow splitting across paths.",
+        "condition": "When multiple commodities (origin–destination pairs) traverse a shared network with arc capacities and each commodity has external supply/demand at nodes."
+      },
+      "Dummy Node for Supply-Demand Imbalance": {
+        "definition": "Add a dummy sink (unused supply) with zero‑cost arcs from all supply nodes, or add a dummy source (unmet demand) with high‑penalty arcs. This preserves total unimodularity and avoids side constraints that break the pure network structure.",
+        "condition": "When total supply exceeds total demand in a pure network flow model and there is no penalty for unused supply; or unmet demand must be penalized. Exclude if excess supply is prohibited or must be explicitly tracked as inventory."
+      },
+      "Node-Splitting for Arc Lower Bound Enforcement": {
+        "definition": "Replace arc (i,j) with two arcs: (i,k) with capacity U−L and cost c, and (j,k) with capacity L and cost 0, where k is a new node. Adjust node supplies so that exactly L units are forced through the (j,k) arc, satisfying the lower bound without additional constraints.",
+        "condition": "When a minimum‑cost flow problem includes a positive lower bound L_ij > 0 on an arc and the model must respect it while remaining a pure network problem (no explicit lower‑bound constraints). Exclude when L=0 or side constraints already exist."
+      },
+      "Negative Cycle Detection for Unbounded Min-Cost Flow": {
+        "definition": "A directed cycle with total cost < 0 and no capacity limits allows infinite flow circulation, driving the objective to −∞. Diagnose by checking for negative‑cost cycles and add an upper bound on any arc in the cycle to cap the flow.",
+        "condition": "When a min‑cost network flow LP with negative arc costs is unbounded and cycles are not explicitly bounded (no capacity or upper limits on recirculations). Exclude when all costs are non‑negative or arc capacities restrict cycle flow."
+      },
+      "Flow-Dependent Arc Travel Cost (BPR)": {
+        "definition": "Model the non‑linear congestion function via piecewise‑linear approximation using SOS2 constraints to keep the problem MILP‑solvable. For system‑optimum pricing, use marginal cost t(f) + f·t'(f). This captures both user‑equilibrium (UE) and system‑optimum (SO) routing, which differ whenever t'(f) > 0.",
+        "condition": "When arc travel time or cost increases noticeably with flow due to congestion and can be captured by the BPR function t(f)=t₀(1+α(f/C)^β). Exclude when flows are well below capacity and constant cost suffices."
+      },
+      "Discrete Facility Service Level Coupling": {
+        "definition": "Precompute for each OD pair (i,j) and service tier s the maximum flow ψ_ijs if origin i is at tier s. Use binary variables ω_is = 1 if i selects tier s. Link actual flow ψ_ij via precomputed bounds: ψ_ij ≤ Σ_s ψ_ijs ω_is + M(ω_i0+ω_j0) (and matching lower bound). Arc travel time τ_ij is made a linear function of the tier indicators, e.g., τ_ij = t_f + (1−ρ_i)(t_g−t_f) where ρ_i is selected by ω. This eliminates no...",
+        "condition": "When network nodes (facilities) operate at discrete service levels that affect arc traversal times and the maximum flow that can be captured on origin–destination pairs, and the model must stay linear. Exclude if service level is continuous or does not influence times/flows."
+      },
+      "Aggregate Externality Constraint via Arc Coefficients": {
+        "definition": "Precompute a coefficient e_a for each arc (e.g., visibility‑weighted noise dB, casualty risk per flight). Add a linear constraint Σ_a e_a·f_a ≤ T, where T is the hard aggregate limit. This transforms geographically detailed safety or noise regulations into a simple flow constraint, avoiding expensive spatial simulation inside the optimisation.",
+        "condition": "When each unit of flow on an arc generates a fixed per‑unit externality (noise, ground risk) that must be constrained in aggregate, and per‑arc coefficients can be precomputed from spatial data. Exclude if externalities are non‑linear or depend on arc interactions."
+      }
+    },
+    "Resource Allocation": {
+      "Resource Ratio Coupling": {
+        "definition": "Model as cross-pool coupling: total active aircraft ≤ Σ_c ratio_c × pilots_active_in_category_c. With a single automation level, this simplifies to Σ active ≤ ratio × active_pilots. This directly links flight schedule variables to crew resource variables, preventing schedules that exceed pilot monitoring capacity.",
+        "condition": "Trigger when fleet size is limited by remote-pilot headcount through known automation levels (e.g., HOVTL, HOTL, HWTL), possibly with pilots assigned to distinct categories. Exclude when each vehicle requires a dedicated operator with no automation or categories."
+      },
+      "Eligibility-Constrained Assignment": {
+        "definition": "Pre-screen pairs: build an eligibility matrix M_{v,m} = 1 if vehicle v meets all hard requirements. Define assignment variables only for eligible pairs; fix all other combinations to zero or omit them entirely. This eliminates infeasible assignments, enforces compliance, and reduces model size.",
+        "condition": "Triggered when missions, facilities, or tasks have restrictions (regulatory category, payload/range, health, infrastructure type, VTOL capability) that render certain vehicle types ineligible. Exclude when all vehicles can serve all tasks."
+      },
+      "Multi-Resource Crew Bundle": {
+        "definition": "Cap the number of active vehicles of each type by the most limiting resource: Z_type ≤ floor(available_roles / required_per_vehicle) for each role. This is a set of simple linear bounds that ensures no mission type activates more vehicles than any single crew pool can support, without per-vehicle binary assignment.",
+        "condition": "Mission types each require a fixed number of specialists (pilots, nurses, paramedics, etc.) per concurrently active vehicle, and these personnel pools have finite sizes."
+      },
+      "Concurrent Task Limit (Fixed Cardinality)": {
+        "definition": "Introduce binary variable c_{v,t} = 1 if vehicle v uses the resource at time t. Enforce Σ_v c_{v,t} ≤ C_max for every time slot. This captures the physical limitation that only C_max high‑voltage connections can be energized concurrently, which may be stricter than an aggregate energy budget.",
+        "condition": "Apply when infrastructure enforces a hard limit on simultaneous occupancy (e.g., fire‑safety rules limit concurrent fast-charging events to C_max), independent of fleet size or average throughput."
+      },
+      "Cycle-Time Derived Service Capacity": {
+        "definition": "Compute maximum trips per resource: T_max = floor(operational_minutes / cycle_minutes). Constrain total assignments to that resource: Σ_f assign_{f,r} ≤ T_max. This directly ties resource count to achievable throughput without scheduling each minute.",
+        "condition": "Relevant when each use of a pad/station has a deterministic cycle time (flight + recharge + turnaround) and all operations must fit within a fixed daily window; use when time windows are well defined."
+      },
+      "Coverage Slack Variables": {
+        "definition": "For each coverage constraint, add a nonnegative slack variable s_s on the supply-constrained side: Σ x + s = demand. Penalize sum of slacks in the objective. This transforms a potentially infeasible problem into a feasible one while minimizing shortfalls. The slack directly measures unmet demand.",
+        "condition": "Total supply of workers/vehicles may be unable to cover all demand; under-coverage is tolerated but must be penalized. Use when the problem would otherwise be infeasible."
+      },
+      "Dual-Variable Capacity Pricing and Expansion": {
+        "definition": "Optimal dual variables give the marginal value of one more unit of capacity. For pricing, set usage fee equal to the dual. For time‑varying slots, the per‑slot dual π_t indicates the optimal time-of-day pricing. For expansion, rank constraints by dual value and cross-check allowable increase to ensure the dual remains valid for the planned increment. In degenerate cases, the subgradient interval [p_min, p_max] yie...",
+        "condition": "When an LP solves a resource‑allocation model and marginal values of capacity constraints (vertiport slots, airspace segments, production resources) are required for slot pricing, bottleneck ranking, or expansion planning. Include cases of primal degeneracy with multiple dual solutions, and use sensitivity analysis (allowable increase) to validate expansi..."
+      },
+      "Lifetime-Window Availability Summation": {
+        "definition": "Define C_t = Σ_{τ=t-L+1}^{t} x_τ, where x_τ is capacity added in year τ. This linear aggregation directly links earlier decisions to later capacity without tracking individual retirements. Apply to any resource with a fixed validity window.",
+        "condition": "Capacity additions have a known finite lifetime L (e.g., equipment, permits, carbon credits). Total available capacity in each year t is the sum of additions made in the most recent L years."
+      },
+      "Proportional Resource Cap": {
+        "definition": "Express as a linear inequality: Σ_{i∈A} cap_i ≤ φ · Σ_{j∈All} cap_j. Because the total appears on both sides, it remains linear. This scales to any number of resource types and is directly implementable in LP/MIP.",
+        "condition": "A constraint mandates that a certain resource type (e.g., nuclear, renewables) must not exceed a fraction φ of total capacity, where both are sums of decision variables."
+      },
+      "Battery Weight-Payload Coupling": {
+        "definition": "Linear coupling: payload_mass ≤ MTOM − (empty_mass + weight_per_kWh × B). This directly links the energy and payload subsystems, ensuring that missions with heavier packages limit battery size, and long-range missions reduce carrying capacity.",
+        "condition": "When battery capacity is a decision variable and increasing it reduces available payload because of the battery's weight."
+      },
+      "Repositioning Flow Variables": {
+        "definition": "Add decision variables for empty vehicle flows on each arc alongside passenger flows, and enforce node flow conservation including both types. The objective includes a repositioning cost term to prevent unnecessary empty moves while ensuring vehicles can move from surplus to deficit nodes.",
+        "condition": "Applies when demand-responsive fleets require empty repositioning moves to balance asymmetric demand, and repositioning incurs measurable cost; exclude when repositioning is negligible or supply is static."
+      },
+      "Queueing Fleet Size Constraint": {
+        "definition": "Use queuing approximations (M/M/1, M/D/n, or Adelman linearizations) to compute expected queue length at each station as a function of utilization or flow. The total fleet required equals the sum of expected queue lengths plus vehicles in transit, converting operational waiting time into a hard capacity constraint on fleet size.",
+        "condition": "When fleet size is a decision variable and waiting times or service level requirements impose a limit on queue length; covers open and closed queueing networks. Exclude when fleet size is fixed or queueing is irrelevant."
+      },
+      "Fairness-Acceptance Pricing Penalty": {
+        "definition": "Introduce a penalty term in the objective (e.g., quadratic or piecewise-linear) that grows with |p_ij − p_ref|. This captures fairness concerns and prevents extreme price variation while still allowing demand steering.",
+        "condition": "When demand can be shifted via pricing but large price deviations degrade passenger willingness; incorporate dissatisfaction as a convex penalty on deviation from reference price."
+      },
+      "Mutually Exclusive Technology Alternatives": {
+        "definition": "Embed the choice via binary variables that switch parameter sets. Linear expressions for emissions, costs, payload capacity, and energy consumption are formed as sums over technologies of (parameter × binary). This enables simultaneous optimization of fleet composition and operation.",
+        "condition": "The emission factor and performance parameters differ substantially between technology options (e.g., fuel cells 3.5× lower emission factor than Li‑ion) and the technology choice is a decision variable."
+      },
+      "Stochastic & Robust Formulations": {
+        "definition": "First stage selects a buffer capacity for each site; second stage assigns emergency flights to the reserved capacity, with a heavy penalty for unmet missions. Regular throughput is capped at total capacity minus the buffer. This yields a two‑stage stochastic integer program balancing investment in buffers against expected penalty.",
+        "condition": "When high‑priority stochastic demand (e.g., medevac, emergency flights) can preempt low‑priority operations and a minimum service level must be guaranteed by reserving dedicated capacity (pads, chargers, slots) at each facility. Exclude when priority demand is deterministic or can be absorbed by flexible re‑scheduling without dedicated buffers."
+      },
+      "Selection": {
+        "definition": "A greedy algorithm that sequentially picks the element with largest marginal increase in the submodular function provides a tight (1‑1/e) lower bound. This solution can initialize a MIP start or be used as a stand‑alone heuristic for large instances. The submodular property guarantees that the final objective is never worse than this factor of optimal.",
+        "condition": "When the problem involves location or coverage with diminishing returns (overlapping coverage, redundant sensors) and a cardinality budget limits the number of selected items. Exclude if synergy or supermodular effects exist."
+      },
+      "Mission Energy": {
+        "definition": "Ignoring propulsion energy leads to solutions that prescribe excessive hovering or long flight paths, which are infeasible in practice because flight/hovering energy is orders of magnitude greater than communication energy. The model must jointly optimize flight trajectory and transmission power to achieve a realistic minimum-energy strategy.",
+        "condition": "When planning UAV communication relay trajectories or hovering positions, always include propulsion energy alongside transmission power in the objective or constraints. Exclude when transmission power dominates (e.g., very high-power transmitters) or flight is negligible (tethered drone)."
+      }
+    },
+    "Routing": {
+      "Cumulative Risk Constraint (Exposure Limit)": {
+        "definition": "Introduce a linear constraint per vehicle: ∑_{a∈path} r_a · x_a ≤ R_max, with r_a the risk on arc a and x_a a binary arc traversal variable. If candidate route sets are enumerated, sum risk over selected arcs. This enforces aggregate exposure limits without non-linear risk accumulation models.",
+        "condition": "When path planning must respect a cumulative safety risk budget, e.g., ground-impact fatality risk, using a discretized risk mask over the environment."
+      },
+      "Sensor Coverage Feasibility Constraint": {
+        "definition": "Pre-process candidate arcs: compute required safe lookahead distance d_safe(v) based on current speed v, and compare with the sensor’s coverage radius R_sensor. If R_sensor < d_safe(v), arcs where that speed is needed are made infeasible. Alternatively, add a constraint that forces speed_v ≤ v_max where coverage is sufficient, coupling velocity profile decisions with sensor capability.",
+        "condition": "Small UAS with limited onboard detect-and-avoid must guarantee that at every point along the planned route the distance to the nearest unsensed obstacle that could be encountered exceeds the kinematic reaction and braking distance."
+      },
+      "Multimodal Ground Movement Choice": {
+        "definition": "Model each required ground leg as a set of parallel dummy arcs from origin to destination. For movement m, define binary x_{m,k} for each mode k and constraint sum_k x_{m,k} = 1. The travel time is sum_k (dist_m/speed_k) * x_{m,k}, and energy consumed is sum_k (energy_per_meter_k * dist_m) * x_{m,k}. This links mode choice to schedule delay and battery usage, enabling optimization of taxi operations.",
+        "condition": "Ground vehicles can use multiple taxi modes (e.g., hover at 3.25 m/s, passive tow at 2.63 m/s, active wheel at 2.15 m/s) with known speed and energy consumption per mode. The selected mode determines travel time and energy cost for each ground leg."
+      },
+      "Headway-Augmented Edge Cost": {
+        "definition": "For each arc, maintain a list of occupancy intervals. When planning a new vehicle, if its traversal would overlap or follow another within the required headway Tg, the effective cost of that arc becomes base travel time + Tg. This naturally spaces out flights without binary sequencing variables. It yields a congestion‑aware cost function suitable for tactical rerouting or real‑time digital twin.",
+        "condition": "Used in A*/Dijkstra or similar search where paths are planned sequentially for multiple vehicles, knowledge of previous bookings on edges is available, and adding a gap time is preferred over a disjunctive scheduling model."
+      },
+      "Subtour Elimination Constraints": {
+        "definition": "SEC forces for any subset S of nodes not containing depot, sum of edges crossing the cut is at least 2 (or at least 1 for directed). This formulation provides a stronger LP relaxation than MTZ's big-M time constraints. In practice, add SEC lazy cuts via callback when integer solutions contain subtours; the master LP remains compact.",
+        "condition": "When solving vehicle routing or TSP models where LP relaxation strength is critical, use cutset subtour elimination (SEC) inequalities rather than Miller–Tucker–Zemlin (MTZ) lifted constraints, as SEC yields a tighter LP bound. MTZ is acceptable for small instances or when callback separation is unavailable."
+      },
+      "Arc Time Propagation (Big-M)": {
+        "definition": "The constraint τ_j ≥ τ_i + s_i + t_ij − M(1−δ_ij), with M sufficiently large (e.g., horizon end), ensures that if δ_ij = 1 then τ_j ≥ τ_i + s_i + t_ij, propagating time along the route; if δ_ij = 0 the inequality is relaxed. This is essential for VRP with time windows, replacing MTZ constraints. Use careful choice of M to avoid weak LP bounds.",
+        "condition": "When a routing model uses binary arc variables δ_ij to decide whether a vehicle travels from i to j, and arrival times at nodes must respect travel times and service durations, but time propagation should only be enforced if the arc is selected."
+      },
+      "Vehicle Rendezvous Synchronization (Stop-Based)": {
+        "definition": "Introduce continuous variables for truck arrival τ_arr_i and departure τ_dep_i at each stop i. Drone launch time t_launch ≥ τ_arr_i + prep; recovery time t_recov ≤ τ_dep_j (if recovering at same or another stop). Add battery constraints: total flight time ≤ max endurance. If binary stop selection variables are used, linearize via Big‑M linking. This couples truck and drone schedules via shared stop times.",
+        "condition": "When trucks act as drone bases and drones must launch and recover only at truck stops, with battery endurance and time window constraints. Exclude if moving recovery is required."
+      },
+      "Mobile Arc-Based Drone Recovery Synchronization": {
+        "definition": "Model each truck arc (i,j) with travel time T. Drone launch at t_launch, and recovery at t_return = t_start + αT, where α ∈ [0,1] is either a decision variable (optimized meeting point) or a fixed fraction. The drone sortie time equals αT − launch lag. Battery and payload constraints must hold for the sortie. This couples truck progress and drone flight; linearize by discretizing α or using continuous variable wit...",
+        "condition": "Use when the truck route includes moving recovery; i.e., the truck can rendezvous with a drone while driving and the recovery location is a variable fraction along an arc. Exclude if retrieval always occurs at fixed stops. Requires known truck speed, drone speed, and travel time along each arc."
+      },
+      "Multi-Drop Drone Sortie with Payload-Weighted Energy Balance": {
+        "definition": "Define the drone sortie as a TSP/VRP path starting and ending at truck stops. Track cumulative payload after each delivery: load after node i = previous load − demand_i, kept nonnegative. Energy consumption on arc (i,j) = (α + β·load_{ij})·dist_ij, coupling routing, payload, and range. Battery balance: soc_j = soc_i − e_{ij} ≥ reserve. Add subtour elimination and time windows as needed. This yields sequence‑depend...",
+        "condition": "Use when drone capacity permits multiple deliveries per flight and deliveries can be sequenced, and payload-sensitive energy consumption must be modeled. Exclude when the drone carries only a single parcel per sortie (constant payload), simplifying to point‑to‑point energy."
+      },
+      "Speed Ratio Gate for Drone Viability": {
+        "definition": "If drone speed is less than twice the truck’s speed, the drone’s flight plus synchronization delays (launch, recovery, handover) often exceed the time a truck would take to serve the same customer. Applying this gate reduces variable count and prevents the model from wasting computation on marginally beneficial drone sorties. Implement as a filter when generating feasible truck‑drone arcs.",
+        "condition": "Apply as a data pre‑processing rule before constructing the optimization model: when truck and drone speeds are known, remove drone arcs or drone‑truck combinations where drone_speed < 2 × truck_speed. Exclude if non‑time objectives dominate (CO₂, cost) or drone availability is abundant."
+      },
+      "Candidate Waypoint Coverage Constraint": {
+        "definition": "Precompute per‑target feasible waypoint sets. Introduce binary visit variables for waypoints. Add constraints ∑_{p∈S_i} visit_p ≥ 1 (set covering) or = 1 (set partitioning). This transforms spatial coverage or quality requirements into standard routing constraints, avoiding complex area coverage or sensor accuracy models inside the MILP.",
+        "condition": "When each target (zone or inspection point) must be covered by the UAV visiting at least one (or exactly one) representative point from a precomputed set of feasible waypoints (e.g., zones with equivalent points, or viewpoints meeting an accuracy threshold)."
+      },
+      "Arc Energy Multi-Factor Modeling": {
+        "definition": "Model per‑arc energy as e = d · f(Δh, speed, payload) where f is a linear or piecewise‑linear function. Use SOS2 constraints to linearize if needed. This couples route geometry and payload/speed decisions with battery/hydrogen capacity constraints, enabling accurate energy‑aware routing.",
+        "condition": "When UAV energy consumption is affected by altitude change, speed, payload, or power source characteristics and must be accounted for in routing."
+      },
+      "Turn-Cost Sequence Dependency": {
+        "definition": "Model by augmenting nodes with approach heading, turning edge costs into asymmetric TSP with turn penalties, or pre‑compute heading‑dependent costs with heuristics.",
+        "condition": "When a vehicle has a minimum turn radius (Dubins vehicle) and edge costs depend on incoming heading, making path cost sequence‑dependent."
+      },
+      "Processing-Time Dominance Routing Simplification": {
+        "definition": "Treat each task as a job with processing time equal to service duration; assign jobs to vehicles as a parallel‑machine scheduling problem, omitting spatial routing variables or adding a small constant overhead. This drastically simplifies the model.",
+        "condition": "When vehicle service/charging/handling times dominate travel times (e.g., minutes vs seconds)."
+      }
+    },
+    "Scheduling": {
+      "Disjunctive Temporal Separation Constraints": {
+        "definition": "Introduce a binary precedence variable y_{ij} for each pair. Enforce mutual exclusion of order via y_{ij} + y_{ji} = 1 (if both use the segment), and disjunctive Big‑M constraints: t_j ≥ t_i + headway − M(1−y_{ij}), t_i ≥ t_j + headway − M·y_{ij}, with M = scheduling horizon. This lets a MIP solver select a conflict‑free sequence without pre‑enumerating all orders.",
+        "condition": "When multiple mobile agents (aircraft, UAVs) share a one-way corridor segment and must maintain a minimum temporal headway to avoid conflicts; continuous-time scheduling with no overtaking."
+      },
+      "Resource-Constrained Turnaround Scheduling": {
+        "definition": "Formulate as a resource‑constrained project scheduling problem (RCPSP) with time‑indexed binary variables x_{v,r,t}=1 if vehicle v starts a task on resource r at time t. Enforce precedence (e.g., charging after arrival) and cumulative capacity: at any time slot, sum of tasks occupying resource r ≤ capacity_r. The schedule must fit between arrival and departure.",
+        "condition": "When vertiport ground operations (charging, maintenance, passenger transfer) must be scheduled under limited numbers of chargers, bays, and personnel, with the goal of minimizing turnaround time or maximizing throughput."
+      },
+      "Endurance-Driven Deadline and Priority Override": {
+        "definition": "Compute a hard deadline from remaining endurance: t_departure ≤ t_arrival + (E_rem − E_min) / r. Additionally, introduce a binary flag c_i = 1 if endurance ≤ reserve_threshold or delay ≥ limit. For any conflicting pair (i,j) on a shared resource, if c_i=1 and c_j=0, force precedence i before j. This couples energy limits with scheduling decisions, preventing endurance exhaustion and service‑level violations.",
+        "condition": "When a vehicle has limited battery/fuel endurance and any holding or taxiing consumes this budget, making prolonged delay infeasible; also, when endurance or accumulated delay reaches a critical threshold, the vehicle must receive top scheduling priority."
+      },
+      "Sequence-Dependent Separation Times": {
+        "definition": "Replace a constant headway with a lookup into a type‑dependent separation matrix S[type_i][type_j]. Use binary ordering variables and Big‑M: start_j ≥ end_i + S_{type_i,type_j} − M(1−y_{ij}). This accurately captures safety or service intervals without worst‑case approximation, improving throughput.",
+        "condition": "When a shared resource (pad, station) processes tasks of different categories and the required temporal gap between consecutive tasks depends on the ordered pair of categories (e.g., wake turbulence classes, fuel types)."
+      },
+      "Simultaneous Resource Exclusion Constraints": {
+        "definition": "Introduce binary occupancy variables o_{r,t}=1 if resource r is occupied at time t. For each dependent pair (r,s), enforce o_{r,t} + o_{s,t} ≤ 1 for all time steps t. This mutual exclusion ensures safety compliance without detailed aerodynamic modeling.",
+        "condition": "When two or more spatial resources (pads, runways) are too close for simultaneous operations due to overlapping safety zones or wake turbulence, preventing concurrent usage."
+      },
+      "Fixed Incumbent Occupancy Forbidden Intervals": {
+        "definition": "Derive binary unavailability parameters o_{g,t} from the incumbent schedule. New service occupancy x_{i,g,t} is then bounded: x_{i,g,t} ≤ 1 − o_{g,t} during the occupancy interval. This avoids adding disjunctive constraints between the two systems.",
+        "condition": "When new mobility services must share gates or stands with conventional operations whose schedule is fixed and unchangeable, creating pre‑determined unavailability windows."
+      },
+      "Charging Schedule Grid Limit": {
+        "definition": "Introduce binary connection variables z_{v,t}=1 if vehicle v is plugged in at time t, drawing known power p_v. Add aggregate constraint Σ_v p_v·z_{v,t} ≤ P_max ∀ t. This couples the scheduling of arrivals/departures with battery state-of‑charge and charger assignments, forcing joint optimization of flight and charging sequences.",
+        "condition": "When multiple electric vehicles charge simultaneously at a vertiport whose electrical power supply is capped (e.g., 500 kW). Do not use if each charger has an isolated supply."
+      },
+      "Indicator-Enforced Time Windows": {
+        "definition": "Replace Big‑M formulations with solver‑provided indicator constraints (e.g., Gurobi’s addGenConstrIndicator) to improve numerical stability and eliminate artificial bounds. The syntax (x == 1) >> (t >= a) directly links the binary assignment to the time window.",
+        "condition": "When a task’s start or arrival time must respect a time window only if a binary assignment variable equals 1, and Big‑M would introduce an unnecessarily large, loose bound."
+      },
+      "Cumulative Resource Capacity Constraints": {
+        "definition": "Use discrete‑time binary occupancy x_{i,t}=1 if job i is active at t. Enforce Σ_i (demand_i · x_{i,t}) ≤ capacity for every time step t. This directly limits the peak load on the resource.",
+        "condition": "When multiple jobs or flights share a scarce resource with limited capacity at any time instant (e.g., airspace sector, number of chargers). Exclude if the resource has unlimited capacity."
+      },
+      "Human Operator Cognitive Workload Constraints": {
+        "definition": "Two complementary modeling patterns: (1) Attention‑budget: a state variable a_t bounded by [A_min, A_max], depletes with number of active UAVs, replenishes during breaks; constraints a_{t+1} = a_t − α·n_active_t + β·rest_t, a_t ≥ 0, and mandatory breaks after a maximum continuous period. (2) Task alternation: limit consecutive high‑demand tasks per operator via moving‑window constraints (e.g., at most K high‑deman...",
+        "condition": "When human operators supervise multiple UAVs and must not exceed cognitive limits: either by limiting continuous monitoring duration, or by avoiding prolonged sequences of high‑demand tasks."
+      },
+      "Coverage Handover Continuity Constraint": {
+        "definition": "For sortie i with start s_i and end e_i, enforce e_i − s_i ≤ endurance, and for the subsequent sortie j, enforce s_j ≤ e_i − T_handover, where T_handover is the required overlap time. Embed in a scheduling MILP with ordering constraints to guarantee continuous coverage.",
+        "condition": "When battery‑limited drones must maintain uninterrupted coverage of a stationary point/area, requiring seamless handover with minimum overlap between departing and arriving sorties. Exclude if intermittent coverage is acceptable."
+      },
+      "Endogenous SoC-Driven Setup Times": {
+        "definition": "Couple flight energy consumption to the charging duration used in scheduling constraints. A change in route or payload can change arrival energy, charging time, and the earliest feasible start of the next assignment. A fixed turnaround parameter omits these dependencies. Express battery states as energy quantities, or convert state-of-charge fractions using battery capacity, so that the charging equation has consistent units. Under constant effective charging power, the energy deficit directly determines charging time.",
+        "condition": "This principle applies when charging between consecutive vehicle assignments depends on the arrival state of charge, which is determined by the preceding flight. It excludes settings with a prescribed, state-independent charging duration."
+      },
+      "Alternative Service Mode Selection (Charge/Swap)": {
+        "definition": "Introduce a binary mode variable z_i (1 if swap). Turnaround time becomes a linear combination: TAT_i = T_swap·z_i + ( (SoC_target − SoC_arrival)/P_charger )·(1−z_i). Departure SoC is e_dep = E_max·z_i + (e_arr + P_ch·t_chg)·(1−z_i). Couple with energy balance on the preceding flight leg to determine arrival SoC, and restrict swap only to equipped gates and compatible vehicle types.",
+        "condition": "When a vehicle at a vertiport can choose between battery charging (time depends on SoC deficit) and battery swapping (fixed time, resets SoC to maximum). Exclude if only one mode exists."
+      }
+    },
+    "Balancing": {
+      "Min-Max Deviation": {
+        "definition": "Introduce auxiliary variables maxVal and minVal representing the extreme group totals. Then either minimize `maxVal - minVal` as a fairness objective or enforce `maxVal - minVal ≤ tolerance` as a hard constraint. This captures worst-case imbalance in a linear way.",
+        "condition": "When an optimization model must balance a workload or resource metric (delays, shifts, etc.) across multiple groups and equity is measured by the gap between the maximum and minimum group totals."
+      },
+      "Load Balancing Constraints": {
+        "definition": "Add per-operator slot-usage limits: for each operator, segment, and time, enforce an upper bound (to prevent dominance) and a lower bound (to ensure fair share). This load-balances corridor access among operators directly, reflecting equity requirements.",
+        "condition": "When airspace operations require equitable capacity usage across multiple operators, preventing a single operator from dominating corridor capacity while also guaranteeing minimum access."
+      },
+      "Time-Order Fairness Constraints": {
+        "definition": "Model order preservation with binary precedence variables y_{i,j} indicating whether flight i is served before j. For strict no-overtaking, enforce y_{i,j}=1 when original order requires it. For limited overtaking, constrain the sum of overtakes per operator.",
+        "condition": "When fairness includes sequencing expectations (e.g., flights served in request order) and resource-leveling alone would cause unacceptable overtaking between operators."
+      }
+    },
+    "Production Planning": {
+      "Energy Balance Equations": {
+        "definition": "Model energy as a dynamic inventory. For each vehicle and each event step, define E_step as energy after the event. E_after_charge = E_before_charge + charge_amount, where charge_amount is a decision variable bounded by charging power and duration. E_after_flight = E_before_flight - consumption. Constraints: 0.2*E_max ≤ E ≤ 0.9*E_max. This ensures battery constraints are integrated into scheduling and routing deci...",
+        "condition": "Vehicles rely on battery power with finite capacity, consume energy during taxi and flight, and can be recharged during turnaround. Feasibility requires that state of charge never drops below a safety threshold and stays below maximum capacity."
+      },
+      "Facility-Location Lot-Sizing Formulation": {
+        "definition": "Use the facility‑location style formulation: binary setup variables x_j and continuous assignment variables w_{jk} (fraction of period k demand satisfied from period j production). Constraints: Σ_{j≤k} w_{jk}=1 and w_{jk} ≤ x_j. The constraint matrix is totally balanced; the LP relaxation yields integer w_{jk} without explicit integrality, providing the convex hull of the ULS polytope.",
+        "condition": "When modeling uncapacitated lot sizing or fixed-charge decisions (e.g., production, charging events) over discrete time periods with setup and holding costs, and no production capacity or storage limits break the zero-inventory property."
+      },
+      "Alternative Bills-of-Materials Constraint Splitting": {
+        "definition": "Instead of a single production variable with aggregated resource consumption, create variables per variant, each consuming its own resource. This yields separate capacity constraints, reflecting true substitution and preventing the model from over-using one resource while ignoring the other. Total production is the sum of the variant variables.",
+        "condition": "Applies when a product has multiple mutually substitutable input options (e.g., two memory board types) and each option consumes a different, limited resource; the product quantity can be split across variants. Exclude when components share identical resource requirements."
+      }
+    },
+    "Packaging": {
+      "Knapsack Constraints": {
+        "definition": "This pattern maps directly to a knapsack model: binary variables represent project adoption, a single budget constraint limits total spending, and the objective maximizes total benefit (throughput, economic impact). Linking constraints to downstream flow variables ensure only upgraded facilities host charging.",
+        "condition": "The problem requires choosing a subset of airside upgrade projects (e.g., charging stations, grid connections) under a fixed total capital budget, where each project incurs a known cost and delivers a quantifiable benefit. Only selected projects become available for subsequent operations."
+      },
+      "Incompatible Items Splitting Constraint": {
+        "definition": "Enforce that no drone or vehicle carries two items of incompatible types simultaneously. This is done via pairwise exclusion constraints per vehicle or by limiting each vehicle to one item type using a type‑assignment binary and indicator constraints, ensuring realistic delivery planning for meal or hazardous material transport.",
+        "condition": "When items are classified into incompatible types and each vehicle can only carry items of a single type or must not carry conflicting pairs."
+      }
+    },
+    "Inventory Management": {
+      "Network-Flow Reformulation for Integrality": {
+        "definition": "Replacing stock variables with arc flows on a time‑expanded network (production arcs, inventory arcs between periods, demand sinks) produces a totally unimodular constraint matrix. The LP optimal basis will be integer, eliminating the need for integer variables and enabling fast primal simplex with spanning‑tree bases.",
+        "condition": "When a multi‑period inventory or production planning problem has linear holding/ production costs, no setup binaries, and integer demand; the resulting network flow LP automatically yields integer stock levels."
+      }
+    }
+  },
+  "General Formulation": {
+    "Constraint Formulation": {
+      "Nonlinear Function Handling": {
+        "definition": "Prefer solver native direct general constraints (addGenConstrNL, addGenConstrMax) for supported functions to avoid manual reformulation. When a MIP is needed or the solver lacks direct support, use solver-native PWL (addGenConstrPWL) instead of manual λ/SOS2. Check convexity: if the function is convex in the optimisation sense, PWL needs only SOS2 and solves as an LP; non-convex requires binary variables and becom...",
+        "condition": "The model contains univariate nonlinear terms (exp, sin, x^k) or non-smooth functions (max/min/abs) that would make the problem non-convex, or it requires piecewise-linear approximation of a univariate function and a solver-native PWL construct is available. Exclude when manual SOS2 branching or custom cut separation is required."
+      },
+      "Piecewise Linear Approximation (PWL)": {
+        "definition": "Prefer solver native direct general constraints (addGenConstrNL, addGenConstrMax) for supported functions to avoid manual reformulation. When a MIP is needed or the solver lacks direct support, use solver-native PWL (addGenConstrPWL) instead of manual λ/SOS2. Check convexity: if the function is convex in the optimisation sense, PWL needs only SOS2 and solves as an LP; non-convex requires binary variables and becom...",
+        "condition": "The model contains univariate nonlinear terms (exp, sin, x^k) or non-smooth functions (max/min/abs) that would make the problem non-convex, or it requires piecewise-linear approximation of a univariate function and a solver-native PWL construct is available. Exclude when manual SOS2 branching or custom cut separation is required."
+      },
+      "Big-M & Indicator Variables": {
+        "definition": "Use solver indicator constraints (addGenConstrIndicator) for simple variable-gated linear constraints to avoid manual Big‑M. For complex logical conditions, apply per-variable Big‑M tightening (use the tightest bound, e.g., arc capacity), deadband Big‑M for threshold indicators, and systematic CNF-to-MIP conversion. For regime-switching, introduce binary indicators with weighted-sum or Big‑M to activate regime-spe...",
+        "condition": "Constraints or objective components depend on logical conditions (if-then, either-or, at-least-k), discrete operating regimes, demand thresholds, or disjunctive convex regions, and the model is solved as a MIP. Exclude when continuous expressions lack finite upper/lower bounds."
+      },
+      "Disjunctive Non-Convex Region via Big-M": {
+        "definition": "Use solver indicator constraints (addGenConstrIndicator) for simple variable-gated linear constraints to avoid manual Big‑M. For complex logical conditions, apply per-variable Big‑M tightening (use the tightest bound, e.g., arc capacity), deadband Big‑M for threshold indicators, and systematic CNF-to-MIP conversion. For regime-switching, introduce binary indicators with weighted-sum or Big‑M to activate regime-spe...",
+        "condition": "Constraints or objective components depend on logical conditions (if-then, either-or, at-least-k), discrete operating regimes, demand thresholds, or disjunctive convex regions, and the model is solved as a MIP. Exclude when continuous expressions lack finite upper/lower bounds."
+      },
+      "Logical and Big-M Indicator Constraints": {
+        "definition": "Use solver indicator constraints (addGenConstrIndicator) for simple variable-gated linear constraints to avoid manual Big‑M. For complex logical conditions, apply per-variable Big‑M tightening (use the tightest bound, e.g., arc capacity), deadband Big‑M for threshold indicators, and systematic CNF-to-MIP conversion. For regime-switching, introduce binary indicators with weighted-sum or Big‑M to activate regime-specific bounds. For disjunctive regions (union of convex polyhedra), use binary selection variables (sum y_i=1) and Big‑M per disjunct. Demand-triggered activation links a binary to a threshold condition via constraints. This yields a single MIP that automatically selects the correct constraint set.",
+        "condition": "Constraints or objective components depend on logical conditions (if-then, either-or, at-least-k), discrete operating regimes, demand thresholds, or disjunctive convex regions, and the model is solved as a MIP. Exclude when continuous expressions lack finite upper/lower bounds."
+      },
+      "Regime-Switching Constraint Formulation": {
+        "definition": "Use solver indicator constraints (addGenConstrIndicator) for simple variable-gated linear constraints to avoid manual Big‑M. For complex logical conditions, apply per-variable Big‑M tightening (use the tightest bound, e.g., arc capacity), deadband Big‑M for threshold indicators, and systematic CNF-to-MIP conversion. For regime-switching, introduce binary indicators with weighted-sum or Big‑M to activate regime-spe...",
+        "condition": "Constraints or objective components depend on logical conditions (if-then, either-or, at-least-k), discrete operating regimes, demand thresholds, or disjunctive convex regions, and the model is solved as a MIP. Exclude when continuous expressions lack finite upper/lower bounds."
+      },
+      "Disaggregation Tightening for Fixed-Charge Constraints": {
+        "definition": "Replace or augment aggregated constraints (sum_i flow_j,i ≤ M·y_j) with per-destination constraints flow_j,i ≤ d_i·y_j, where d_i is maximum demand, to cut off fractional solutions. For disjunctions, use convex-hull variable splitting: copy continuous variables for each disjunct k (x = Σ x^k), enforce disjunct constraints only on x^k with its binary y^k (Σ y^k=1), yielding the tightest LP relaxation. For corridor...",
+        "condition": "Naive Big‑M or aggregated fixed-charge/disjunctive formulations produce a weak LP relaxation or an exponential number of constraints in time-indexed/disjunctive models, and tightening is needed. Exclude if the problem size becomes impractically large from disaggregation."
+      },
+      "Strong Disjunctive and Separation Formulations": {
+        "definition": "Replace or augment aggregated constraints (sum_i flow_j,i ≤ M·y_j) with per-destination constraints flow_j,i ≤ d_i·y_j, where d_i is maximum demand, to cut off fractional solutions. For disjunctions, use convex-hull variable splitting: copy continuous variables for each disjunct k (x = Σ x^k), enforce disjunct constraints only on x^k with its binary y^k (Σ y^k=1), yielding the tightest LP relaxation. For corridor...",
+        "condition": "Naive Big‑M or aggregated fixed-charge/disjunctive formulations produce a weak LP relaxation or an exponential number of constraints in time-indexed/disjunctive models, and tightening is needed. Exclude if the problem size becomes impractically large from disaggregation."
+      },
+      "Linearization of Non-linear Forms": {
+        "definition": "For two binaries x_i, x_j, introduce auxiliary continuous y_ij and enforce y_ij ≤ x_i, y_ij ≤ x_j, y_ij ≥ x_i + x_j − 1, y_ij ≥ 0. This exact linearization preserves 0‑1 integrality. For binary p times continuous s with upper bound D, enforce r ≤ P·s, P·s − r ≤ P·D·(1−p), and s ≤ D·p. This forces r = P·s when p=1 and r=0, s=0 when p=0, avoiding an auxiliary integer variable while keeping the model linear.",
+        "condition": "The objective or constraints contain a product of two binary variables, or a product of a binary variable and a continuous variable that has a known natural upper bound (e.g., demand)."
+      },
+      "Product-of-Binary-and-Continuous Linearization": {
+        "definition": "For two binaries x_i, x_j, introduce auxiliary continuous y_ij and enforce y_ij ≤ x_i, y_ij ≤ x_j, y_ij ≥ x_i + x_j − 1, y_ij ≥ 0. This exact linearization preserves 0‑1 integrality. For binary p times continuous s with upper bound D, enforce r ≤ P·s, P·s − r ≤ P·D·(1−p), and s ≤ D·p. This forces r = P·s when p=1 and r=0, s=0 when p=0, avoiding an auxiliary integer variable while keeping the model linear.",
+        "condition": "The objective or constraints contain a product of two binary variables, or a product of a binary variable and a continuous variable that has a known natural upper bound (e.g., demand)."
+      },
+      "Infeasibility Repair": {
+        "definition": "Add non‑negative slack/surplus variables to constraints. Optionally compute an Irreducible Inconsistent Subsystem (IIS) to identify the minimal conflicting set, then add slacks only to those. Minimize total weighted slack to obtain the smallest violation that restores feasibility. Solver utilities such as feasRelax automate the process. After repairing, re‑optimize with the original objective.",
+        "condition": "Model is infeasible due to conflicting constraints and a feasible relaxation is required for diagnosis or as a starting point; infeasibility is not caused by trivial data errors."
+      },
+      "Piecewise Step-Function Cost": {
+        "definition": "Use ordered binary variables b_k with precedence b_{k+1} ≤ b_k. Cumulative capacity = Σ Δcap_k · b_k, total cost = Σ Δcost_k · b_k. This gives an integer‑linear formulation without SOS2 constraints, enforcing that higher tiers are only available after lower tiers are installed.",
+        "condition": "Infrastructure capacity expansion cost is a step function where each incremental block has a fixed size and cost, and blocks must be activated in sequence (e.g., grid upgrade tiers). Do not use for smooth cost curves better handled by SOS2 PWL."
+      },
+      "LP Sensitivity Re-optimization": {
+        "definition": "The current basis remains optimal over an interval where reduced costs stay nonnegative (cost case) or basic variables stay nonnegative (RHS case). Compute these intervals via the basis inverse and simple linear inequalities; at the boundary a reduced cost or basic variable hits zero, requiring one pivot to obtain the new basis. This provides warm‑start re‑optimization and yields the piecewise‑linear value functio...",
+        "condition": "An LP objective cost vector or right‑hand side depends linearly on a scalar parameter, or a single RHS/coefficient changes, and the previous optimal basis is available. Exclude if the basis was not saved or the change is not local."
+      },
+      "Convex Piecewise-Linear Linearization": {
+        "definition": "For an objective term max_k(a_k·x+b_k), introduce auxiliary variable z and add constraints z ≥ a_k·x+b_k; minimize z. For |g(x)| use t ≥ g(x), t ≥ −g(x). For a constraint max_k(f_k(x)) ≤ h, simply enforce f_k(x) ≤ h for all k. This preserves convexity and avoids binary variables, keeping the model linear.",
+        "condition": "An objective or constraint contains a convex piecewise‑linear function formed by max of affine terms, absolute value, or absolute change, and a pure LP (no integer variables) is required. Exclude nonconvex functions or when max appears on the “greater than” side."
+      },
+      "Avoid Exact MILP for Combinatorial Optimization": {
+        "definition": "Direct MILP linearization of QAP adds n⁴ variables and constraints, blowing up memory and time. Time‑indexed MILP for RCPSP rarely solves exactly for non‑trivial instances. Discretizing a continuous coverage area into a grid converts exact CPP into a combinatorial routing heuristic that may lose the true optimal continuous path. Instead, use specialized approaches: QAP‑specific heuristics/decomposition, priority‑r...",
+        "condition": "The problem is a quadratic assignment (n>10), resource-constrained project scheduling (>30 tasks), or continuous area coverage where exact optimality is required, and a direct MILP or grid-discretization leads to an intractable model (e.g., O(n⁴) variables for QAP, thousands of binaries for time‑indexed RCPSP) or loss of optimality (TSP grid heuristic for..."
+      },
+      "Symmetry Breaking Constraints": {
+        "definition": "Add a lexicographic ordering constraint on a monotonically assigned quantity (e.g., total demand served by agent k). Forcing that quantity to be non‑increasing across identical agents eliminates permutations without affecting feasibility, dramatically reducing the branch‑and‑bound search space.",
+        "condition": "The model contains multiple identical entities (vehicles, machines, agents) whose assignment or routing variables create solution symmetry."
+      },
+      "Domain-Specific Constraint Formulation": {
+        "definition": "Introduce a binary indicator z that activates when the decision variable crosses the threshold. Link via Big-M: var ≤ threshold − ε + M·z and var ≥ threshold·z (or var ≤ threshold−1+M·z for integer vars). Then use z to Big-M-activate the appropriate regulatory constraints. This avoids solving separate models per regime and correctly captures decision-dependent compliance costs.",
+        "condition": "When a decision variable (e.g., weekly roundtrips, annual enplanements) crosses a statutory threshold that reclassifies the operation under a different regulatory part with distinct constraint blocks. Exclude when the regime is purely an external scenario parameter."
+      },
+      "Domain Decomposition Strategy": {
+        "definition": "Decompose into a master problem that selects truck stop locations (and possibly a truck route) and a subproblem that checks drone delivery feasibility. With fixed stops, the drone subproblem becomes a convex assignment or network‑flow problem, enabling efficient solution and generation of strong optimality/feasibility cuts for the master.",
+        "condition": "When a truck-drone routing problem couples ground vehicle stops and drone sorties, and the integrated MIP is intractable. The truck acts as a mobile depot, drones serve nearby customers under range and payload limits. Exclude when drone range is not limiting."
+      },
+      "Decomposition Strategy": {
+        "definition": "Each area solves a local scheduling/flow optimization that treats inbound/outbound boundary flows as decision variables subject to shared capacity quotas at CEPs. A federated coordinator or iterative negotiation protocol (priority rules, dual prices, proportional fairness) adjusts the quotas across areas to resolve conflicts and achieve global feasibility without sharing full internal demand data. This respects operational independence and avoids a monolithic solver.",
+        "condition": "When the airspace can be partitioned into cooperative areas (different PSUs or separate domains) with known coordinated entry/exit points (CEPs), and a centralized monolithic optimization is infeasible or undesirable due to scale, privacy, or single-point-of-failure concerns. Not needed if the problem is small or areas are fully independent."
+      },
+      "Perturbation Robustness Sensitivity Test": {
+        "definition": "For a formulation that may be ill‑conditioned, solve many times with tiny random perturbations (e.g., ±1e-6) added to objective coefficients and RHS. Track how often feasibility is lost and by how much the solution changes. If even tiny noise causes large solution jumps or infeasibility, the formulation is too sensitive and needs rescaling or constraint relaxation. Disabling presolve ensures the raw model behavior is tested.",
+        "condition": "Applies when narrow separation margins (airspace corridors, energy limits) make the solution hypersensitive; exclude when problem is coarse and small perturbations cannot change feasibility."
+      },
+      "MIP Optimality and Feasibility Caveat": {
+        "definition": "Never assume global optimality unless the solver returns OPTIMAL with zero gap. The incumbent is the best found; its objective may be far from the true optimum. Numerical instability can cause constraint slacks to be negative beyond the feasibility tolerance. Always verify critical constraints using actual variable values, and consider tightening tolerances or scaling coefficients.",
+        "condition": "Applies whenever a MIP is terminated by a time limit or a non-zero MIP gap (status TIME_LIMIT or solution with positive gap), and when scaled-up instances risk floating-point violations."
+      },
+      "Avoid Monolithic MILP for Integrated Truck-Drone Routing": {
+        "definition": "Full MILP models with arc‑indexed variables, synchronization, and battery constraints become intractable beyond very small instances. Instead, decompose (e.g., master selects stops, subproblem solves drone routes) or use hybrid methods (Lin‑Kernighan heuristic + drone‑routing MILP). This prevents wasted effort on monolithic exact models.",
+        "condition": "When solving real‑world instances of Flying Sidekick, PDSTSP, or carrier‑vehicle problems where customer count exceeds roughly 10."
+      },
+      "Optimization Solution Caveat": {
+        "definition": "The coupled PDE ∇·(κ(|∇φ|)∇φ)=q can have several solutions that satisfy the equilibrium condition. A standard Newton iteration with a fixed starting point may converge to a high‑cost local minimum. To avoid misleading results, verify optimality by re‑solving from several initial guesses, or use a global optimisation algorithm (multistart, genetic algorithm) when few design variables exist (e.g., barrier height).",
+        "condition": "Applies whenever a continuum traffic equilibrium (Wardrop or system optimum) is solved via Newton’s method, and the underlying cost function or domain geometry makes the residual non‑convex, yielding multiple stable solutions."
+      }
+    },
+    "Objective Specification": {
+      "Hierarchical/Epsilon-Constraint Multi-Objective Optimization": {
+        "definition": "Use either the solver's multi-objective API (e.g., Gurobi setObjectiveN with priority, ObjNRelTol/ObjNAbsTol) or a two‑phase manual epsilon‑constraint: Phase 1 optimize the primary objective to get best value p*, then impose primary ≤ p* + tolerance and optimize the secondary. The coverage‑energy trade‑off is a direct application of epsilon‑constraint (coverage ≥ α, min energy). This avoids numerical issues from h...",
+        "condition": "When the problem has multiple conflicting objectives with a priority order and you need to control degradation of higher-priority objectives (e.g., cost before fairness, coverage before energy), either via solver built-in multi-objective or manual epsilon-constraint."
+      },
+      "Alternative Optima Handling": {
+        "definition": "Either preemptively add a tiny secondary penalty term (e.g., 1e‑6 * smoothness_cost) to the objective so the solver breaks ties automatically, or after solving the LP inspect non‑basic variables for zero reduced cost and binding constraints for zero shadow price to identify alternative optima and manually select a solution that improves secondary metrics.",
+        "condition": "When many distinct feasible solutions yield an identical optimal primary objective value, and a secondary criterion (smoothness, noise, etc.) is desired."
+      },
+      "Priority-Weighted Tardiness/Recovery Objective": {
+        "definition": "Introduce non‑negative delay variables d_i ≥ completion_time_i − due_i, then minimize Σ w_i d_i. For recovery after a disruption, set the due time equal to the disruption instant and weight each task by its importance. This yields a linear objective that integrates seamlessly into any LP/MIP scheduling or assignment model.",
+        "condition": "When tasks have due dates or a disruption occurs, and the objective is to minimize weighted delays or recovery duration, with task‑specific criticality weights."
+      },
+      "Lifecycle Emission Objective with Technology-Specific Factors": {
+        "definition": "Total emission = Σ (energy_consumed_kWh × ef_eff_tech) + Σ (vehicles × (ef_prod + ef_recycle)) + Σ (maintenance_hours × ef_maint). The effective emission factor per kWh is ef_eff = (ef_upstream + ef_direct)/η × (1 + deg). This prevents bias towards technologies with low direct but high upstream emissions and accounts for capacity fade in batteries.",
+        "condition": "When fleet composition and operation decisions must minimize total lifecycle carbon emissions, and technologies differ in upstream intensity, conversion efficiency, and degradation."
+      },
+      "Competing Externality Trade-off": {
+        "definition": "Drone delivery displaces ground transport, reducing CO₂/NOx but adding noise. Model as a weighted‑sum objective: min α × noise_dose − β × emissions_saved, where noise dose is a spatially discretized sum over arcs and population zones, and emissions saved scale linearly with displaced distance. The ratio α/β defines the implied cost of noise vs. carbon.",
+        "condition": "When modal substitution produces externalities with opposite signs and different units (e.g., noise vs. CO₂ savings), requiring an explicit multi‑objective treatment with a single trade‑off parameter."
+      },
+      "Fractional Objective Binary Search": {
+        "definition": "Instead of nonlinear solvers, binary search over α is coupled with an LP that enforces the ratio inequality, linearizing the problem. Each iteration solves an LP feasibility instance; the final interval bounds the optimum to desired tolerance.",
+        "condition": "The model is a linear fractional program minimizing (or maximizing) a ratio of linear functions, the denominator sign is constant, and a fast LP solver is available."
+      },
+      "Primary Cardinality Fix then Min-Max Balancing": {
+        "definition": "Phase I solves min Σ δ_k. Phase II adds constraint Σ δ_k = K*, introduces continuous slack variables s_k ≥ 0 for each resource's limit L, enforces workload_k + s_k = L, and minimizes max s_k. This yields the best‑balanced schedule without increasing the minimal fleet size.",
+        "condition": "The first objective is minimizing the number of resources (binary sum), and after attaining the minimum, the goal is to balance workloads (time, capacity) across the used resources. Exclude if count and balance must be solved simultaneously with a single weighted sum."
+      },
+      "Plan Instability Penalty (Rerouting Cost)": {
+        "definition": "Introduce binary variables δ_i that equal 1 if the new assignment for item i differs from the baseline. Enforce with δ_i ≥ x_i − x̂_i and δ_i ≥ x̂_i − x_i (or Big‑M). Add penalty γ Σ δ_i to the objective. The penalty coefficient γ balances optimality and stability; source used this to limit the number of reroutings.",
+        "condition": "Re‑optimization occurs online; each change to a previously communicated route/slot assignment incurs operational cost or degrades predictability. The objective must trade off current optimality against plan continuity."
+      },
+      "Concave Reward from Repeated Independent Detection": {
+        "definition": "If a target is visited k times, detection probability = 1−(1−p)^k, a concave function. A linear reward per visit would over‑value revisits. Reformulate the objective as a sum of piecewise‑linear concave segments per target, using binary variables to select the number of visits and SOS2 constraints to capture diminishing contributions.",
+        "condition": "The mission involves detecting stochastic targets where multiple independent passes increase detection probability (p known and constant per pass), and revisits yield diminishing returns."
+      }
+    },
+    "Variable Definition": {
+      "Candidate Pre-Screening Elimination": {
+        "definition": "Apply a pre-filtering step to discard infeasible candidates, reducing the set for which binary decision variables are created. This shrinks the MIP size and avoids infeasibility from clearly unsuitable candidates.",
+        "condition": "When many candidate sites/options exist and require pre-screening against readiness criteria (binary must-have checks, composite score thresholds, or spatial feasibility constraints) before optimization."
+      },
+      "Total Unimodularity Preservation and Caution": {
+        "definition": "TU matrices allow continuous variable formulations to yield integer optimal solutions. Adding slacks or side constraints destroys TU, leading to fractional solutions; then original variables must be explicitly declared binary. Conversely, if TU structure can be preserved, solve as LP for speed.",
+        "condition": "When the problem's constraint matrix is (or would be) totally unimodular (e.g., assignment, network flow, cyclic scheduling with consecutive-ones interval matrix) and integer RHS, but slack variables or extra side constraints may be added."
+      },
+      "Native Integer vs Binary Expansion": {
+        "definition": "Use native integer variables with bounds [0, U] instead of expanding into floor(log2(U))+1 binary variables. This keeps formulation compact and preserves stronger LP bounds.",
+        "condition": "When the problem intrinsically has integer variables (e.g., number of vehicles, trips) and not merely logical binary choices, and binary expansion would explode variable count and weaken LP relaxation."
+      },
+      "Continuous vs Discrete Variable Selection": {
+        "definition": "For large numbers of identical small items (e.g., parcels, flights), use continuous variables and round post-solve with negligible error. For large indivisible units (e.g., plants, large machines), use binary or integer variables to prevent fractional infeasibility.",
+        "condition": "When modeling quantities where the choice exists between continuous and discrete variables, depending on the scale and indivisibility of items."
+      },
+      "Unrestricted Variable Decomposition into Nonnegative Pair": {
+        "definition": "Decompose free variable x into x⁺ − x⁻ with x⁺, x⁻ ≥ 0. At optimum, at most one is positive. This transformation is exact and enables standard-form solvers.",
+        "condition": "When a decision variable is unrestricted in sign and the solver/algorithm requires nonnegative variables in standard form (min c^T x, Ax=b, x≥0)."
+      },
+      "Simple Bounds via Variable Attributes": {
+        "definition": "Set the bound directly as a variable attribute (e.g., x.UB = U) rather than adding a constraint. The reduced cost of x then directly gives the marginal value of relaxing the bound, providing cleaner sensitivity analysis.",
+        "condition": "A variable has a simple upper/lower bound (e.g., x ≤ U) that is independent of other variables, and sensitivity information on the bound's value is desired."
+      },
+      "Auxiliary Variable Integrality Relaxation": {
+        "definition": "Keep w as a continuous variable; the constraints together with binary x,y force w to 0 or 1 at optimality, reducing the number of binary variables in the MIP.",
+        "condition": "When linearizing products of binary variables (w = x·y) using auxiliary variable w and bounding constraints w ≤ x, w ≤ y, w ≥ x+y−1, and the objective function pushes w to its lower/upper bound."
+      },
+      "Pattern Variable Reformulation for Symmetry Avoidance": {
+        "definition": "Reformulate using pattern variables γ_k, the number of times pattern k is used. Master problem becomes set-partitioning/covering min Σ c_k γ_k subject to Σ_k a_jk γ_k ≥ 1 for each task, eliminating symmetry and enabling column generation.",
+        "condition": "When resources (vehicles, pipes, aircraft) are truly identical and interchangeable, leading to massive symmetry and equivalent solutions from per-unit assignment variables."
+      },
+      "Closed-Form Optimal Elimination": {
+        "definition": "Solve dR/dh = 0 analytically for optimal h*, substitute into the model to eliminate the altitude variable, reducing variable count and avoiding nonlinearities while preserving optimality.",
+        "condition": "When a coverage metric (e.g., radio footprint radius) is a unimodal, differentiable function of a single continuous variable (e.g., altitude), and horizontal position is fixed or optimized separately."
+      }
+    },
+    "Units Scaling": {
+      "Optimality Gap Calibration": {
+        "definition": "Relying solely on relative MIP gap may terminate with a large absolute gap if the objective is large (e.g., $1M objective, 0.01% relative = $100 absolute). Set MIPGapAbs to an application‑specific acceptable absolute error (e.g., $50) to guarantee practical precision.",
+        "condition": "When objective magnitude is known and an absolute acceptable tolerance must be enforced."
+      },
+      "Numerical Stabilization Strategy": {
+        "definition": "Combine aggressive scaling and numeric-focused solver settings with explicit finite bounds on all variables. ScaleFlag=2 applies row/column scaling; NumericFocus=1‑3 improves precision; MarkowitzTol near 0.999 avoids unstable LU pivots. Imposing large but finite bounds (e.g., ±1e6) on otherwise unbounded variables compacts the polyhedron, reduces aspect ratio, and prevents solution drift from tiny perturbations. A...",
+        "condition": "When a Gurobi LP/MIP shows numerical instability signs (KappaExact > 1e12, coefficient range exceeding 1e9, ill‑conditioned basis warnings) OR contains continuous variables that could become unbounded or extremely large, making the feasible polyhedron thin and ill‑conditioned."
+      }
+    }
+  },
+  "Code Implementation": {
+    "Solver & API Syntax": {
+      "Multi-Scenario Feature (NumScenarios, ScenNRhs)": {
+        "definition": "Set model.NumScenarios = K. For each scenario s, assign model.ScenNRhs[s, constr_name] = rhs_val, model.ScenNObj[s, var_name] = cost, etc. Gurobi builds the deterministic equivalent internally, sharing model structure. After optimization, access model.ScenNObjVal[s] for each scenario.",
+        "condition": "When demand/cost uncertainty is described by a small set of discrete scenarios, use Gurobi's NumScenarios, ScenNRhs, ScenNObj, ScenNUB to set scenario‑specific data without duplicating constraints, then retrieve scenario objective values."
+      },
+      "Batch Coefficient Modification & Update Synchronization": {
+        "definition": "Gurobi stores attributes lazily. Batch all modifications (lb, ub, obj, rhs) first, then call model.update() once before the next optimize. After optimization, use model.getAttr(attr, list) for bulk attribute retrieval. Always reference objects by handles, not numeric indices, to prevent index shift errors.",
+        "condition": "When using Gurobi and you need to query attributes before or after optimization, or when programmatically modifying many variable/constraint attributes between successive solves, to avoid stale values and per‑item overhead."
+      },
+      "Lazy Model Update & Bulk Attribute Access": {
+        "definition": "Gurobi stores attributes lazily. Batch all modifications (lb, ub, obj, rhs) first, then call model.update() once before the next optimize. After optimization, use model.getAttr(attr, list) for bulk attribute retrieval. Always reference objects by handles, not numeric indices, to prevent index shift errors.",
+        "condition": "When using Gurobi and you need to query attributes before or after optimization, or when programmatically modifying many variable/constraint attributes between successive solves, to avoid stale values and per‑item overhead."
+      },
+      "Avoid reset() to Preserve Warm Start": {
+        "definition": "After modifying variable bounds or objective coefficients, simply call model.optimize() again. The solver (e.g., Gurobi) will detect that the abstract model is unchanged and will start from the previous basis. A call to model.reset() before optimize discards all warm‑start information, causing a cold start that can drastically increase solve time. Reset is only appropriate for completely independent major structur...",
+        "condition": "Applies when you are re‑optimizing a model after small changes such as fixing some variables to integer values, changing right‑hand sides, or adding lazy constraints, and you want to benefit from a warm start. Avoid if the model structure changes dramatically."
+      },
+      "Tupledict Wildcard Summation": {
+        "definition": "Use flow.sum('*', i, j) to sum over all commodities for a specific arc, flow.sum(h, '*', j) to sum over all incoming origins, and flow.sum(h, j, '*') to sum over all outgoing destinations. This replaces manual quicksum loops and reduces index‑related errors while keeping constraint expressions readable and efficient.",
+        "condition": "When using Gurobi Python API and variables are stored in a tupledict (via addVars with multiple indices), and constraints require summing over one index dimension while keeping others fixed."
+      },
+      "addVars with obj Argument": {
+        "definition": "Provide a dictionary mapping variable index tuples (e.g., (h,i,j)) to their unit costs as the obj argument of addVars. The solver automatically sets the variable's Obj attribute, so no separate setObjective or quicksum is needed. This reduces code duplication and the risk of mismatched objective terms.",
+        "condition": "When every indexed variable has a predetermined cost coefficient and you are creating the variables with addVars on the same index sets."
+      },
+      "Data Preparation with gp.multidict and gp.tuplelist": {
+        "definition": "gp.multidict(dict_of_tuples) returns a tupledict (fast summation) and a flat list of keys. gp.tuplelist from the keys enables fast select('*', shift) or select(worker, '*') to iterate over allowed assignments without manual filtering. This reduces indexing errors and speeds model construction.",
+        "condition": "When an optimization model has eligibility restrictions (e.g., worker‑shift availability) and data is provided as a dictionary of (key1, key2): value."
+      },
+      "FeasRelax for Minimal Infeasibility Repair": {
+        "definition": "Call model.feasRelax(relaxobjtype=0, minrelax=False, ubpen=penalty_dict) to create a relaxed model where each constraint obtains a new slack/surplus variable and the objective minimizes the weighted L1 norm of those slacks. This directly yields a feasible solution with the cheapest violation, bypassing iterative IIS debugging. L2 introduces quadratic penalty requiring NonConvex=2 and slower solves; L0 gives unreli...",
+        "condition": "The initial MIP is infeasible because of hard constraints on deadlines, slot counts, or capacities; you need to identify a minimal relaxation that makes the model feasible, preferring automatic slack insertion over manual IIS analysis. Also, when choosing a penalty norm, use L1 to preserve model class and avoid quadratic non‑convexity."
+      },
+      "Batch Model Submission for Many Instances": {
+        "definition": "Build a list of model objects, then use Gurobi's batch solve to dispatch them to a cluster manager. This avoids sequential solves and manual parallel loops, leveraging load balancing and efficient job scheduling.",
+        "condition": "The user needs to solve many independent optimization instances (100+) with identical variable and constraint structure but different coefficients, and parallel hardware is available."
+      },
+      "Time-Limited IIS Completeness Check": {
+        "definition": "An approximate IIS from time‑limited computation may contain redundant constraints—it is not guaranteed irreducible. Before using the IIS to drive automatic repair (e.g., adding slacks only to IIS constraints), check each constraint's IISMinimal attribute. If IISMinimal is False for some constraints, the IIS is approximate and removing those constraints may not resolve infeasibility. Either increase the time limit or manually verify.",
+        "condition": "Triggered when computeIIS() is called with a time limit (or when the solver hits its default IIS time limit) on a large infeasible model, and the result is used to guide constraint relaxation or repair."
+      },
+      "NonConvex=2 for Global Quadratics": {
+        "definition": "By default, Gurobi treats quadratics as convex; setting NonConvex=2 activates spatial branch‑and‑bound and convex relaxation cuts. Tight variable bounds are crucial for efficiency.",
+        "condition": "When the model includes any nonconvex quadratic expression (products of continuous variables, negative‑definite quadratic forms) and you require a proven global optimum."
+      },
+      "Solver-Native Multi-Objective Control": {
+        "definition": "Using setObjectiveN, you can specify up to 15 objectives with distinct priorities and optional weights within the same priority. The solver then optimizes sequentially (lexicographic) or blends weights. This avoids manual loops of fixing primary objective with epsilon constraints, reducing solve time and ensuring correct handling of integer variables.",
+        "condition": "Multiple objectives have a strict priority ordering (e.g., primary: minimize noise; secondary: minimize energy cost) and the optimization solver supports native multi‑objective (Gurobi 9+)."
+      },
+      "Efficient Constraint Formulation (MVar & addLConstr)": {
+        "definition": "Use addMVar to create vector variables and addMConstr with the @ operator to write A @ x <= b, especially for dense patterns such as flow conservation or time‑linked capacities. For sparse rows (degree‑1 assignments, simple bound couplings), use addLConstr passing explicit variable indices and coefficients to bypass expression‑tree overhead. Both approaches dramatically reduce model‑building time and code volume.",
+        "condition": "When building many constraints that can be expressed compactly by matrix‑vector operations, or when adding a large number of very sparse linear constraints where each row contains only a few nonzeros."
+      },
+      "Degeneracy Cycling Prevention via Simplex Rule": {
+        "definition": "Degeneracy can cause simplex to cycle without progress. Use Bland's rule (enter/leave by smallest index) or lexicographic pivoting to guarantee termination. In Gurobi, choose Method=1 (dual simplex) or Method=0 with SimplexPricing=2 (steepest edge) to reduce stalling. In column generation with a degenerate master, check that the pivot step θ > 0 before asserting improvement; otherwise a negative reduced cost may n...",
+        "condition": "When LPs contain many active constraints with zero reduced costs (e.g., tight time windows, resource‑balance equalities) leading to degenerate pivots and potential cycling, or when using reduced costs to check optimality in a degenerate LP."
+      },
+      "Warm-Start Basis Reuse for Model Modification": {
+        "definition": "For a new variable, compute its reduced cost using the dual solution (c_j - π^T A_j). If negative, append the column and invoke primal simplex from the current basis. For a new violated inequality, add the slack variable to form a dual‑feasible basis (primal infeasible) and apply dual simplex. For a new equality, introduce an artificial variable with large penalty and run primal simplex. Perturbations to nonbasic...",
+        "condition": "When adding a variable, inequality, or equality to an LP that already has an optimal basis, or when a single column coefficient changes slightly, to avoid resolving from scratch."
+      },
+      "Callback-Driven Lazy Constraint Addition": {
+        "definition": "Start with the base model containing only essential constraints (e.g., degree constraints for TSP). In a MIPSOL callback, check each integer incumbent for violations. If a violated constraint is found, add it lazily via cbLazy. The solver re-optimizes and repeats. This keeps the model size manageable while guaranteeing feasibility.",
+        "condition": "When solving MIP models where a family of constraints (e.g., subtour elimination, cutting stock) is exponentially large but can be separated efficiently from integer incumbent solutions, and a compact base model exists."
+      },
+      "MIP-Start Injection from Heuristic": {
+        "definition": "A greedy heuristic that iteratively picks the facility covering the most uncovered demands provides a feasible solution in polynomial time. This solution can be set as a MIP start (Start attribute) to warm-start the solver, often reducing root-node processing. For uniform costs the greedy solution achieves an O(log n) approximation bound, guaranteeing a reasonable initial objective value.",
+        "condition": "When the problem can be formulated as a set covering model (e.g., binary variables select facilities to satisfy demand) and a feasible initial solution is needed to accelerate branch-and-bound."
+      },
+      "Solution Pool Utilization": {
+        "definition": "Set the solver’s PoolSolutions parameter to capture multiple feasible solutions (e.g., 10). Use PoolGap to limit the suboptimality margin and PoolSearchMode to encourage diversity. After optimization, retrieve all solutions and evaluate them using additional metrics like resilience or social acceptability.",
+        "condition": "When the problem exhibits symmetry or flat objective landscapes, and planners need to compare alternative optimal or near‑optimal solutions to choose one that performs best on unmodeled criteria."
+      },
+      "Fix-and-Dive Primal Heuristic": {
+        "definition": "After the root LP, sort integer variables by fractionality (distance to the nearest integer). Fix the first quartile to that integer by setting both lower and upper bounds. The solver reuses the previous basis as warm start because variable indices remain. Re‑optimize (LP or MIP). Iterate until integer‑feasible or infeasible. The bound adjustments are temporary and can be reverted later. This avoids model rebuilding and exploits the solver’s warm‑start capability.",
+        "condition": "When a large MIP yields a fractional LP relaxation with many near‑integer values and a primal bound is needed rapidly; do not use if the LP solution is highly fractional or the MIP is small enough to solve exactly."
+      },
+      "Efficient Constraint Addition using Generator Expressions": {
+        "definition": "In GurobiPy, model.addConstrs((sum(flow[w,p] for w in W) <= cap[p]*open[p] for p in P), name='cap') adds all constraints in one call, which is faster than a for‑loop with addConstr. Use generator to avoid storing temporary lists.",
+        "condition": "When constructing a model that requires a large family of identical structure constraints (e.g., capacity, demand) over index sets."
+      },
+      "Presolve-Induced Dual Invisibility": {
+        "definition": "Gurobi's presolve can discard redundant integer variables, reducing MIP dimension but possibly breaking the logic of external components that expect those variables. To retain original integrality, set Presolve=0. Alternatively, record the presolved dimensions and adjust downstream logic accordingly.",
+        "condition": "When the model depends on a specific set of integer variables for custom branching, cut generation, or feasibility checks, and presolve might remove or relax them. Exclude for pure linear models without integrality sensitivity."
+      },
+      "Presolve Disable for Raw Solver Behavior Testing": {
+        "definition": "Presolve can scale rows/columns, remove roundoff‑prone constraints, or re‑express them in ways that hide underlying ill‑conditioning. Disabling presolve ensures that the solver works on the raw coefficient matrix, so any numerical warnings (high Kappa, large dual violations) directly reflect the formulation’s inherent quality. This is essential when designing robust formulations for thin feasible sets like UAM corridor separation constraints.",
+        "condition": "Use when you need to understand how the solver handles the exact, unscaled model, e.g., during KappaExact checks or perturbation sensitivity tests. In normal production, presolve is beneficial and should remain on unless dual values are needed from the original constraints."
+      },
+      "Callback-Based Primal Heuristic Injection": {
+        "definition": "Set model.Params.Heuristics = 0 to disable built-in heuristics. In a callback (e.g., MIPNODE), obtain the relative LP solution (cbGetNodeRel) for binary variables. Apply a rounding threshold (e.g., >0.5 → 1, else 0) and check feasibility. Use cbSetSolution to inject the rounded solution. This can provide a valid upper bound earlier or accelerate branch-and-cut when custom domain knowledge exists.",
+        "condition": "Applies when standard MIP heuristics are turned off (e.g., Heuristics=0) and a problem-specific rounding rule can quickly construct a feasible solution from the current LP relaxation point. Not needed if default heuristics already find good solutions or if rounding is unlikely to yield feasibility."
+      },
+      "Multi-Scenario Feature": {
+        "definition": "After setting NumScenarios and defining scenario-specific data (e.g., ScenNRhs), call optimize. Then, to get per-scenario results, iterate over scenario indices, set ScenarioNumber, and query ScenNObjVal and ScenNObjBound. Comparing ScenNObjVal against GRB.INFINITY identifies infeasible scenarios. This avoids separate solves per scenario and provides detailed scenario-wise output for reporting or analysis.",
+        "condition": "When using Gurobi's multi-scenario feature to solve stochastic programs with discrete scenarios, and you need to retrieve the optimal objective value or bound for each scenario after a single solve."
+      },
+      "Solver Tuning Sensitivity": {
+        "definition": "Tuned solver settings are sensitive to the problem's matrix and variable distribution. A change like a new wake-separation minimum can alter the effect of cuts and heuristics, potentially increasing solve time. Use the solver's automatic tuning tool on a representative set of instances after structural modifications.",
+        "condition": "When the problem structure changes—e.g., adding separation constraints, changing fleet composition, or modifying objective weights—do not assume previously tuned solver parameters remain effective; re-tune or revert to baseline."
+      },
+      "Constraint-Guided Primal Heuristic": {
+        "definition": "Temporarily set lower and upper bounds of selected binary variables to the hinted value. Run Gurobi's NoRel heuristic (or equivalent) to extend the partial assignment into a full feasible solution. Restore the original variable bounds and inject the found solution as a MIP start. This acts as a lightweight feasibility pump without permanent model changes.",
+        "condition": "When a large MIP is infeasible to start and a credible partial assignment from domain knowledge exists."
+      },
+      "Multi-Start for Nonconvex NLP": {
+        "definition": "Generate multiple feasible initial points (e.g., by perturbing a heuristic solution or sampling). Solve the NLP from each point using MIP starts or sequential solves. Retain the solution with the best objective. This multi‑start strategy mitigates the local‑only guarantee of the barrier method.",
+        "condition": "When solving a nonconvex NLP with barrier, where a single solve may yield a poor local optimum."
+      },
+      "Callback Interface Compatibility": {
+        "definition": "Gurobi callbacks are not supported in MATLAB or R, and Compute Server/Instant Cloud have restrictions (e.g., no user callbacks). When building a model that relies on callbacks for lazy constraint generation or heuristic injection, use a Python, C++, Java, or .NET API and run on a local Gurobi license to ensure full callback functionality.",
+        "condition": "Trigger: model uses callbacks for lazy constraints, heuristic, or logging. Avoid MATLAB/R API and cloud/distributed deployments if callbacks are essential; prefer C, C++, Java, .NET, Python local license."
+      },
+      "Fixed MIP Dual Extraction": {
+        "definition": "Solve MIP, then fix all integer/binary variables to their optimal values, call m.fixed() to obtain a continuous LP, optimize it, and query Pi attributes. The duals reflect the marginal value of relaxing constraints given the fixed integer configuration, not the true MIP shadow price. Use with caution.",
+        "condition": "Applies when MIP duals are required for marginal cost analysis, Benders cut generation, or capacity valuation, but the solver natively offers only LP duals."
+      },
+      "Multi-Scenario Baseline Robustness Test": {
+        "definition": "Fix discrete variables to the baseline values, set NumScenarios, and define scenario-specific RHS via ScenNRhs. After solving, the solver returns scenario-wise objective values and can report which scenarios are infeasible, providing a robustness profile without manual loops.",
+        "condition": "Applies when you have a baseline solution and need to assess its feasibility and cost variability across discrete scenarios; uses solver's native multi-scenario support to avoid model duplication."
+      },
+      "Exact Condition Number Monitoring": {
+        "definition": "KappaExact computes the exact condition number of the optimal basis matrix. Large values signal that small perturbations in RHS or objective coefficients can produce large changes in the solution. This warns the modeler that the formulation needs scaling or that reported dual values are not trustworthy. Checking KappaExact is a fast diagnostic to decide whether to apply column/row scaling or to tighten Big‑M values before trusting the solution.",
+        "condition": "Use whenever numerical reliability is critical and coefficients vary widely, or after observing unexpected dual/feasibility violations. High KappaExact (>1e9) strongly indicates that the optimal basis is ill-conditioned and the solution may be inaccurate."
+      },
+      "Reduced-Price Fixing Heuristic": {
+        "definition": "If a variable’s absolute reduced cost (in the minimisation LP) is larger than the gap between the incumbent and the best bound, changing its value would at least increase the LP objective by that amount, making any new solution worse than the incumbent. Fixing it eliminates branching on that variable.",
+        "condition": "When a MIP has an incumbent solution and a non‑zero optimality gap; reduced costs from the LP relaxation can be used to permanently fix variables, shrinking the branch‑and‑bound tree."
+      },
+      "MIP Solver Performance": {
+        "definition": "Explicitly define a binary variable for the condition and link it with indicator constraints (e.g., capacity_used = C ⇒ saturate = 1). Although this increases model size, it provides strong candidates for branching, often dramatically reducing search time because the solver can branch on these meaningful dichotomies instead of relying on generic variable branching.",
+        "condition": "A MIP contains natural logical conditions (e.g., 'is a resource saturated?', 'is a flight delayed?') that are not encoded as variables, and the solver struggles to prove optimality due to poor branching decisions."
+      },
+      "Sensitivity Sweep for Critical Fixed Parameters": {
+        "definition": "A single parameter like t_w can drastically reduce profit; without stress testing the optimal network configuration may be fragile. Sweeping across 0–20 minutes reveals the threshold where coverage becomes unprofitable, guides operational improvement targets, and highlights sensitivity for decision‑makers.",
+        "condition": "The model contains a fixed parameter (e.g., pre‑flight waiting time) that strongly influences the objective and whose true value is uncertain; the model is re‑solvable in reasonable time for multiple values."
+      }
+    },
+    "Model Constraints & Logic": {
+      "Scenario-Contingent Variable Upper Bounds": {
+        "definition": "Instead of adding scenario‑specific constraints, set the upper bound of the binary open variable to 0 via model.setAttr('ScenNUB', [open[p]], [0], s). This enforces closure directly, preserving model sparsity and avoiding duplicate constraints.",
+        "condition": "When modeling discrete scenarios where a facility (plant) must be closed in certain scenarios, and the model already uses Gurobi’s multi‑scenario feature."
+      },
+      "Network Flow Reformulation for Efficiency": {
+        "definition": "Many large LPs are actually transshipment problems. By casting them as minimum-cost network flow (nodes with supply/demand, arcs with costs/capacities), you can use network simplex or specialized codes that exploit the totally unimodular node-arc incidence matrix for faster pivots. Even in general-purpose solvers, the network structure may be auto-detected and solved faster; explicitly identifying it aids algorithm selection.",
+        "condition": "When a distribution, transportation, or supply chain LP involves only flow conservation at nodes and arc capacities, reformulate it as a pure network flow problem to leverage network-optimized solvers or algorithms, greatly reducing solution time on large instances."
+      }
+    },
+    "Data I/O & Validation": {
+      "Data-Model Separation for Reusability": {
+        "definition": "Load data from CSV/JSON into dictionaries before model building. Use those dicts in all constraint expressions and objective terms. This avoids embedding numbers in code and makes the model instantly reusable for new instances.",
+        "condition": "When the model must be re‑run with different demand, cost, or capacity inputs, e.g., sensitivity analysis or scenario studies."
+      },
+      "Flat Scalar Index and ASCII Naming Requirement": {
+        "definition": "Gurobi's addVars requires flat scalar indices. Nested tuples cause errors. Instead, flatten composite keys to strings (e.g., 'i_j') or use integer encoding. Constraint names must be ASCII without spaces; otherwise LP file export fails silently or with cryptic errors. Apply these rules at construction time to avoid debugging multi-index models.",
+        "condition": "When variable indices are naturally composite (e.g., (i,j) tuples) and you are tempted to pass tuples directly to addVars; or when constraint names contain spaces or non-ASCII characters for readability."
+      }
+    }
+  }
+}

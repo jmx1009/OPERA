@@ -1,0 +1,48 @@
+[
+  {
+    "insight_id": "lesson8",
+    "round": 1,
+    "paper_excerpts": {
+      "Original first sentence": "This insight applies when the problem domain requires resources to move or transform through nodes and local conservation must hold.",
+      "Added applicability clause": "This insight applies when the optimization model includes explicit resource-budget or capacity limits that must be enforced through conservation-style inequalities, especially for a coupled routing-and-service problem where vehicles, payload, service time, battery charge, or facility throughput are consumed along routes."
+    },
+    "correct_before": 2,
+    "correct_after": 6,
+    "records": 6
+  },
+  {
+    "insight_id": "lesson135",
+    "round": 1,
+    "paper_excerpts": {
+      "Original condition": "This insight applies when a binary decision should switch a continuous quantity on or off.",
+      "Added applicability clause": "This insight applies when the model explicitly has a continuous service quantity whose existence depends on a binary activation variable, such as served demand, flow, or capacity being present only if a route, link, or facility is opened.",
+      "Exclusion excerpt": "the problem is a discrete facility-location/assignment model with binary build, served/not-served, and routing/allocation decisions rather than a continuous quantity that must be switched on or off"
+    },
+    "correct_before": 0,
+    "correct_after": 6,
+    "records": 8
+  },
+  {
+    "insight_id": "lesson265",
+    "round": 1,
+    "paper_excerpts": {
+      "Original condition": "This insight applies when a binary open/closed decision should activate or deactivate route use.",
+      "Added applicability clause": "This insight applies when the model contains a facility-opening binary that is supposed to condition actual route, departure, return, or traversal arcs, such as depot/station/vertiport opening variables linked to drone, vehicle, or flow routes.",
+      "Added exclusion clause": "This insight does NOT apply when the decision problem is a facility siting, coverage, or assignment model without route-arc decisions that must be switched on/off by facility-opening binaries."
+    },
+    "correct_before": 2,
+    "correct_after": 3,
+    "records": 3
+  },
+  {
+    "insight_id": "lesson265",
+    "round": 4,
+    "paper_excerpts": {
+      "Before": "This insight applies when a binary open/closed decision should activate or deactivate route use.",
+      "After": "This insight applies when two cues appear together: a binary open/closed site variable and an arc-activation or route-permission rule."
+    },
+    "correct_before": 17,
+    "correct_after": 19,
+    "records": 25
+  }
+]

@@ -1,0 +1,188 @@
+{
+  "Domain Modeling": {
+    "Packaging": {
+      "Knapsack Constraints": {
+        "definition": "When the problem involves selecting food items to meet nutritional targets while minimizing costs. The best practice is to ensure the constraints accurately reflect the scalar capacity, in this case, the budgetary limit. A common mistake is to overlook the discrete nature of item selection, which happens because the modeler might not account for the integer nature of purchasing decisions. More generally, this refl...",
+        "condition": "This insight applies when the problem domain requires selecting items that consume a single scalar capacity such as weight, volume, or budget. For example, when the problem statement required determining the least expensive way to meet nutritional requirements, it implies a budget constraint that resembles a knapsack problem. This insight applies when the..."
+      }
+    },
+    "Production Planning": {
+      "Composition bounds": {
+        "definition": "When the problem involves production planning with specific composition constraints for each product, the best practice is to define allocation variables that specify how much of each raw material is used in each product and ensure these allocations respect the given composition constraints. A common mistake is to define percentages as fixed parameters without explicitly modeling the allocation of raw materials, w...",
+        "condition": "This insight applies when the production planning problem involves specific composition constraints for each product, such as minimum or maximum percentages of raw materials in each candy brand. For example, when the problem statement mentioned that Candy A must contain at least 60% of raw material A and at most 20% of raw material C."
+      },
+      "Technical Ratio Constraints": {
+        "definition": "When the problem involves a technical ratio constraint between production quantities, the best practice is to convert this ratio into a linear inequality that reflects the minimum required condition. A common mistake is to misinterpret the ratio constraint and formulate it incorrectly, which happens because the algebraic representation does not match the intended requirement. More generally, this reflects that rat...",
+        "condition": "This insight applies when the problem description specifies a production ratio requirement between products. For example, when the problem statement mentioned that for every five units of product A produced, at least two units of product B must be produced."
+      },
+      "Inventory Balance Equations": {
+        "definition": "When the problem involves inventory levels that change over time due to purchases and sales, the best practice is to ensure that inventory balance equations correctly reflect the stock-flow relationship. A common mistake is to omit constraints that enforce sales to not exceed the available inventory, which happens because the model focuses only on purchase and sales quantities without ensuring feasibility of stock...",
+        "condition": "This insight applies when the problem description involves materials or products that carry over between periods and must satisfy stock-flow balance. For example, when the problem statement mentioned that the store has an initial stock of 200 units and can purchase or sell products each month, maintaining the inventory balance over time is crucial. This i..."
+      },
+      "Time-Indexed Variables": {
+        "definition": "When the problem involves covering specific time periods with unique constraints, the best practice is to define decision variables that are indexed by these time intervals to accurately capture the temporal dynamics. A common mistake is using a single time index for variables that actually need to cover multiple overlapping periods, which happens because the model does not reflect the actual requirement of coveri...",
+        "condition": "This insight applies when the problem involves scheduling resources over discrete time periods with unique constraints for each period. For example, when the problem statement mentioned covering specific 4-hour periods with different waiter demands or when each waiter works continuously for 8 hours and the required number of waiters varies by 4-hour periods."
+      }
+    },
+    "Resource Allocation": {
+      "Capacity/Resource Balance Equations": {
+        "definition": "When the problem involves balancing resource usage against constraints, the best practice is to accurately model the consumption of resources with constraints that ensure feasibility. A common mistake is neglecting to include such constraints or misformulating them, which happens because modelers may overlook the necessity of enforcing these limits explicitly. More generally, this reflects that resource allocation...",
+        "condition": "This insight applies when the problem domain requires resources to move or transform through nodes and local conservation must hold. For example, when the problem statement involves ensuring that the usage of printing and scanning machines does not exceed their available time limits, or in the meal plan problem where nutritional constraints act as resourc..."
+      },
+      "Set-Partitioning/Assignment": {
+        "definition": "When the problem involves assigning cars to parking spots, the best practice is to ensure each car is assigned to exactly one side using binary decision variables. A common mistake is not properly aligning this constraint with the overall objective or other constraints, which happens because the model fails to differentiate between minimizing total versus maximum street occupancy. More generally, this reflects tha...",
+        "condition": "This insight applies when the problem description requires each car to be parked on exactly one side of the street. For example, when the problem statement mentioned that each car must be parked on either the left or right side, not both, the failed model correctly used a constraint to ensure this, but the overall formulation did not address the objective..."
+      },
+      "Fixed Charge (Big-M Linking)": {
+        "definition": "When the problem involves a choice between two exclusive options, the best practice is to use a binary variable to enforce this choice and link it with constraints using a Big-M approach. A common mistake is failing to enforce mutual exclusivity properly, which happens because the constraints do not correctly prevent both options from being selected simultaneously. More generally, this reflects that the Fixed Char...",
+        "condition": "This insight applies when the problem description specifies that a particular mode of transportation must be chosen exclusively between two options, such as choosing only one between van and electric vehicle. For example, when the problem statement mentioned that the company wants to choose only one of the van or electric vehicle options."
+      },
+      "Expected-return objective": {
+        "definition": "When the problem involves maximizing an expected payout based on probabilities, the best practice is to multiply the payout by the probability of winning (1 - probability of losing) for each bet. A common mistake is to directly use the payout multipliers in the objective without adjusting for the probability of winning, which happens because the direct payouts are misinterpreted as expected values. More generally,...",
+        "condition": "This insight applies when the problem description involves maximizing an expected payout based on probabilities of losing and corresponding payouts. For example, when the problem statement mentioned maximizing the average payout from bets, considering both the probability of losing and the payout for winning."
+      },
+      "Chance Constraint": {
+        "definition": "When the problem involves setting a limit on the average probability of losing, the best practice is to express the constraint as the weighted average of probabilities, weighted by the amounts bet on each option. A common mistake is failing to normalize this weighted sum by the total amount bet, which happens because the constraint is incorrectly expressed as a direct sum of weighted probabilities. More generally,...",
+        "condition": "This insight applies when the problem description specifies a constraint on the average probability of losing money across different bets. For example, when the problem statement mentioned that the average chance of losing money should be at most 30%."
+      }
+    },
+    "Facility Location": {
+      "Fixed Charge (Big-M Linking)": {
+        "definition": "When the problem involves conditional constraints based on binary choices, the best practice is to use Big-M linking constraints to ensure that actions, such as trips, are only counted if the corresponding condition, like mode selection, is active. A common mistake is failing to enforce these linking constraints, which happens because it does not correctly apply the conditional logic necessary for the solution. Mo...",
+        "condition": "This insight applies when constraints depend on logical on/off conditions controlled by binary variables and service or flow is allowed only if a facility is opened. For example, when the problem statement mentioned that either the bicycle or the handcart can be chosen, and trips with the chosen mode are allowed."
+      }
+    },
+    "Selection": {
+      "Binary Selection Constraints": {
+        "definition": "When the problem involves selection constraints, the best practice is to define binary variables to clearly indicate which items are selected and link them to continuous variables for conditional activities. A common mistake is omitting these binary variables, which happens because the modeler assumes constraints can be enforced on continuous decision variables alone. More generally, this reflects that binary sele...",
+        "condition": "This insight applies when the problem domain requires choosing a subset under count, budget, or compatibility limits. For example, when the problem statement requires that Vicky and David can grow at most two types of fruit."
+      }
+    },
+    "Balancing": {
+      "Proportion Constraints": {
+        "definition": "When the problem involves proportional constraints, like limiting the proportion of transportation using trolleys to 40%, the best practice is to set up the constraints to reflect these ratios correctly. A common mistake is to incorrectly set the relational operator or the expression, which happens because of a misinterpretation of the proportion requirement. More generally, this reflects that domain-specific prop...",
+        "condition": "This insight applies when the problem description specifies a maximum or minimum proportion of usage for a certain resource. For example, when the problem statement mentioned that only a maximum of 40% of the transportation can be using trolleys."
+      },
+      "Load Balancing Constraints": {
+        "definition": "When the problem involves minimizing a function that can be expressed directly, it is necessary to linearize the expression to handle it within linear programming solvers. The best practice is to model the absolute difference in a linear form using auxiliary variables to directly minimize the imbalance. A common mistake is failing to correctly linearize the absolute difference or using redundant auxiliary variable...",
+        "condition": "This insight applies when the problem description requires distributing a load across multiple entities to ensure fairness or minimize maximum usage. For example, when the problem statement mentioned minimizing the total length of the street occupied by cars, which implies balancing the parking distribution across both sides to minimize the maximum length..."
+      }
+    },
+    "Network Flow": {
+      "Max-Flow Objective": {
+        "definition": "When the problem involves maximizing flow in a network, the objective should directly reflect the total flow from the source to the sink node. The best practice is to set the objective function to maximize the total flow reaching the sink. A common mistake is to incorrectly specify the objective, such as including unnecessary terms that do not contribute to the flow into the sink, which happens because the focus i...",
+        "condition": "This insight applies when the problem description requires maximizing throughput between designated source and sink nodes. For example, when the problem statement mentions computing the maximum amount of electricity that can be distributed from the Power Plant (Node 0) to the Final Distribution Center (Node 7). This insight applies when the problem descri..."
+      },
+      "Flow Conservation": {
+        "definition": "When the problem involves maintaining flow balance at nodes in a network, the best practice is to apply flow conservation constraints correctly for each node except the source and sink. A common mistake is to apply incorrect flow conservation at source or sink nodes, which happens because it can lead to incorrect flow distribution and suboptimal solutions. More generally, this reflects that in network flow problem...",
+        "condition": "This insight applies when the problem description involves quantities traversing a directed network and nodal balance must be maintained. For example, when the problem statement requires determining the maximum cargo flow across a network of hubs where inflow and outflow at intermediate hubs should balance. This insight applies when redistributing resourc..."
+      },
+      "Source-Sink Flow Conservation": {
+        "definition": "When the problem involves maximizing flow from a source to a sink, the best practice is to explicitly model the flow balance at the source and sink to ensure that the net flow into the sink equals the net flow out of the source. A common mistake is to omit these explicit constraints, which happens because the model may incorrectly assume flow conservation is naturally maintained by other constraints. More generall...",
+        "condition": "This insight applies when the optimization task requires maximizing flow from a designated source node to a sink node, and the flow must be conserved at these nodes. For example, when the problem statement mentioned maximizing data transmission from Station 0 to Station 8."
+      },
+      "Arc-capacity constraints": {
+        "definition": "When the problem involves network flow with arc capacities, the best practice is to correctly enforce arc-capacity constraints that limit the flow on each link by its bandwidth. A common mistake is failing to properly apply these constraints to ensure that the flow does not exceed the capacity of any arc, which happens because the constraints might be incorrectly formulated or applied. More generally, this reflect...",
+        "condition": "This insight applies when the problem domain contains edges with maximum throughput or capacity limits. For example, when the problem requires maximizing the bandwidth between nodes, using the minimum bandwidth on the path as the objective, or when the problem statement specified the maximum units per day that each transport tube can carry."
+      },
+      "Source Flow Constraint": {
+        "definition": "When the problem involves a source distributing flow to a sink, the best practice is to ensure flow conservation at the source such that total outflow minus inflow equals flow into the sink. A common mistake is to not enforce this constraint, which happens because it might seem redundant with other conservation constraints. More generally, this reflects that special care must be taken to distinguish source and sin...",
+        "condition": "This insight applies when the problem domain involves a centralized source node distributing flow to a network ending at a sink node. For example, when the problem statement specified that resources should be moved from the Central Supply Hub to the Farthest Outpost."
+      }
+    },
+    "Routing": {
+      "Subtour Elimination Constraints": {
+        "definition": "When the problem involves ensuring a single tour that visits each node exactly once, such as in the Traveling Salesman Problem, the best practice is to implement subtour elimination constraints to prevent disconnected cycles. A common mistake is failing to apply these constraints correctly, which happens because the model may allow for disconnected cycles or subtours that do not encompass all nodes. More generally...",
+        "condition": "This insight applies when the problem description allows decision variables to form disconnected cycles that must be eliminated. For example, in the Traveling Salesman Problem, where the salesperson must visit each city exactly once and return to the starting city, forming a complete tour without subtours. This insight applies when the problem involves an..."
+      }
+    }
+  },
+  "General Formulation": {
+    "Variable Definition": {
+      "Explicit Bounds": {
+        "definition": "When the problem involves decision variables with natural bounds, the best practice is to explicitly set lower and upper bounds to improve solver performance and ensure realistic solutions. A common mistake is omitting these bounds, which happens because the modeler assumes the solver will inherently handle feasibility. More generally, this reflects that setting explicit bounds can help guide solvers toward optima...",
+        "condition": "This insight applies when the problem description provides natural physical, economic, or logical limits that can tightly bound decision variables. For example, when the problem involves purchasing food items with practical constraints suggesting reasonable upper bounds on the quantity of each item, or when the problem statement mentioned at least 4 runne..."
+      },
+      "Redundant Auxiliary Variables": {
+        "definition": "When the problem involves defining an objective based on existing constraints or variables, the best practice is to directly include the primary goal, such as minimizing pollution, in the objective function. A common mistake is introducing auxiliary variables that do not simplify the model or objective, or minimizing a secondary aspect like the number of trips, which happens because of unnecessary complexity or mi...",
+        "condition": "This insight applies when auxiliary variables or unnecessary terms are introduced in the objective function formulation, which do not add modeling value or contribute to the optimization task. For example, when the problem statement involves maximizing flow and the objective uses a summation that can be directly derived from conservation principles, or wh..."
+      },
+      "Continuous vs. Discrete Confusion": {
+        "definition": "When the problem involves divisible quantities, the best practice is to use continuous variables. A common mistake is using integer variables, which happens because the modeler may confuse countable quantities with divisible ones. Conversely, for indivisible allocations, integer variables are appropriate. More generally, this reflects that choosing the correct variable type is crucial for model flexibility and tra...",
+        "condition": "This insight applies when decision quantities in the problem represent indivisible counts or choices versus divisible amounts such as flows. For example, when the problem statement mentioned the number of servings of each supplement the patient needs, which are inherently discrete, or the number of pills, which must be an integer."
+      },
+      "Indexing & Data Structure Alignment": {
+        "definition": "When the problem involves defining variables over a network, indices must align with the data structure used to represent parameters like capacities. The best practice is to ensure variable indices match the keys or indices of the parameter matrix. A common mistake is misalignment of indices, leading to KeyErrors or incorrect interpretation of constraints, which happens because the indices are not consistently app...",
+        "condition": "This insight applies when the mathematical model contains constraints that need to be expressed using generator expressions directly within constraint construction functions. For example, when the formulation included subtour elimination constraints ensuring variable bounds like `1 <= u[i] <= len(N) - 1` for all cities except the starting city."
+      }
+    },
+    "Constraint Formulation": {
+      "Incorrect Relational Operators": {
+        "definition": "When the problem involves constraints that specify minimum or maximum thresholds, the best practice is to use the appropriate relational operators (≥ or ≤) in the formulation. A common mistake is to misapply relational operators, which happens because of incorrect translation of problem requirements into algebraic form. More generally, this reflects that careful attention is needed to ensure that constraint formul...",
+        "condition": "This insight applies when natural-language statements such as 'at most' or 'at least' must be translated into algebraic inequalities. For example, when the problem statement mentioned the constraints on labor days and watering budget, which express 'at most' conditions, or when at least a third of the work must be allocated to the specialized company."
+      },
+      "Linearization of Non-linear Forms": {
+        "definition": "When the problem involves a non-linear relationship, such as the number of containers per truck, the best practice is to linearize the constraints to maintain tractability. A common mistake is to directly model non-linear relationships, which happens because the need for linearization is overlooked. More generally, this reflects the necessity of transforming non-linear constraints into a linear form to ensure solv...",
+        "condition": "This insight applies when a constraint involves a non-linear expression that can be problematic for linear solvers. For example, in the failed mathematical model, the constraint for the minimum proportion of canoe trips was expressed as a non-linear equation involving division."
+      },
+      "Big-M & Indicator Variables": {
+        "definition": "When the problem involves constraints that should apply conditionally based on binary variables, the best practice is to use Big-M formulations to activate or deactivate constraints. A common mistake is failing to apply these formulations properly, which happens because the constraints may be applied unconditionally without being tied to the decision variables. More generally, this reflects that Big-M formulations...",
+        "condition": "This insight applies when constraints depend on logical on/off conditions controlled by binary variables. For example, when the problem statement mentioned using binary variables to indicate if a product is produced and linking this to production quantities with a Big-M constraint. This insight applies when constraints depend on logical on/off conditions,..."
+      }
+    },
+    "Units Scaling": {
+      "Unit Inconsistency": {
+        "definition": "When the problem involves integrating data from multiple sources or unit systems, the best practice is to ensure consistent units across all variables, parameters, and constraints. A common mistake is failing to align these scales, which happens because of oversight or misalignment in data preparation. More generally, this reflects that maintaining unit consistency is crucial to avoid misinterpretations and errors...",
+        "condition": "This insight applies when input data come from different unit systems or incompatible measurement scales. For example, when the problem statement includes supply and demand values for car relocations, but the constraints are not consistently formulated in terms of net transfer of cars across regions. This insight applies when input data involve different..."
+      },
+      "Big-M Magnitude & Numerical Stability": {
+        "definition": "When the problem involves Big-M constraints, the best practice is to select the smallest possible M that still preserves correctness, as this can improve numerical stability and solver performance. A common mistake is to use an excessively large M, which happens because it seems safer but can lead to numerical issues. More generally, this reflects that careful calibration of Big-M values is crucial for maintaining...",
+        "condition": "This insight applies when the problem description involves constraints that use a Big-M formulation. For example, in the failed mathematical model, the constraints linking trips to mode selection use a Big-M value without ensuring it is as small as possible."
+      }
+    },
+    "Objective Specification": {
+      "Sum vs. Makespan Confusion": {
+        "definition": "When the problem involves parallel activities or resources, the best practice is to clarify whether the objective is to minimize the total quantity or the maximum quantity used. A common mistake is to confuse minimizing the total usage with minimizing the maximum usage, which happens because both objectives can seem similar but lead to different formulations. More generally, this reflects that correctly specifying...",
+        "condition": "This insight applies when multiple resources or activities can run in parallel and the objective is ambiguous between minimizing total completion time and makespan. For example, when the problem statement involved minimizing the total length of the street occupied by cars, which could be interpreted as either minimizing the total length parked or minimizi..."
+      }
+    }
+  },
+  "Code Implementation": {
+    "Solver & API Syntax": {
+      "Nonlinear Constraint Handling": {
+        "definition": "When the problem involves nonlinear constraints due to division or ratio operations, the best practice is to linearize these constraints. A common mistake is to directly implement the nonlinear constraint in the solver, which happens because solvers like Gurobi do not handle nonlinear constraints in linear models efficiently. More generally, this reflects that linearization is necessary for constraints to be compa...",
+        "condition": "This insight applies when the mathematical model contains constraints involving nonlinear operations that need linearization to maintain tractability or solver performance. For example, when the formulation includes x_L / (x_L + x_B) >= 0.7, or requires the number of car trips to be at least 60% of the total trips, or when the problem statement involves a..."
+      },
+      "Variable Bounds Specification": {
+        "definition": "When the problem involves defining upper bounds for decision variables. The best practice is to specify variable bounds as constants or pre-computed values. A common mistake is using expressions that evaluate to non-real numbers, which happens because solvers expect numerical bounds, not expressions that require further evaluation. More generally, this reflects that solvers require explicit numerical parameters fo...",
+        "condition": "This insight applies when the mathematical model contains variable bounds defined by expressions that must be evaluated before the model is constructed. For example, when the formulation included variable bounds as the sum of capacities, which should be evaluated first."
+      },
+      "Quicksum vs. sum Syntax": {
+        "definition": "When the problem involves aggregating variables over multiple indices, such as in flow networks, the best practice is to use `gp.quicksum()` for expression construction. A common mistake is using Python's native `sum()`, which happens because users may not be aware of solver-specific optimizations for large-scale models. More generally, this reflects that efficient model construction requires leveraging solver-nat...",
+        "condition": "This insight applies when the mathematical model contains linear expressions aggregated over large index sets that should be constructed using solver-native summation operators. For example, when the formulation included flow variables across a network with capacity constraints, the use of `gp.quicksum()` ensures efficient construction of these expressions."
+      },
+      "Expression Syntax for Constraints": {
+        "definition": "When the problem involves constraint formulation, the best practice is to rely on the solver's variable type declarations and syntax to enforce constraints correctly. A common mistake is explicitly adding constraints to define behaviors already ensured by the solver's features, or passing terms as separate arguments. This happens because users may not fully trust or understand the solver's capabilities or syntax r...",
+        "condition": "This insight applies when the mathematical model contains indexed variables or parameters that are accessed with indices not present in the corresponding data structures. For example, when the formulation includes cost or parameter data in dictionary form, such as a cost matrix for a traveling salesman problem, where certain combinations of indices like s..."
+      },
+      "Binary Constraint Handling": {
+        "definition": "When the problem involves binary decision variables, the best practice is to rely on the solver's inherent handling of binary constraints. A common mistake is adding redundant constraints like y[i] in [0, 1], which happens because users might mistakenly believe they need to explicitly enforce binary behavior. More generally, this reflects that solvers already account for variable types, and additional constraints...",
+        "condition": "This insight applies when the mathematical model contains binary decision variables that naturally take on values of 0 or 1. For example, when the formulation included binary variables y[i] for opening distribution centers."
+      },
+      "Strict Inequalities": {
+        "definition": "When the problem involves expressing strict inequalities in a mathematical model. The best practice is to reformulate the constraint to use non-strict inequalities, such as adding 1 to the right-hand side for integer variables. A common mistake is to directly implement strict inequalities, which happens because solvers like Gurobi do not support strict inequalities. More generally, this reflects that solvers requi...",
+        "condition": "This insight applies when the mathematical model contains strict inequality relations between variables that cannot be directly handled by LP/MIP solvers. For example, when the formulation included a constraint that required the number of vans to be strictly greater than the number of minibuses, or required more cucumbers than potatoes, or a constraint li..."
+      }
+    },
+    "Data I/O & Validation": {
+      "KeyError & Index Mismatch": {
+        "definition": "When the problem involves iterating over a set of indices in constraints. The best practice is to ensure the index range matches the intended scope. A common mistake is iterating over an incorrect range, which happens because of a misunderstanding of the problem's scope or off-by-one errors. More generally, this reflects that precise index range alignment is crucial for correctly implementing mathematical constrai...",
+        "condition": "This insight applies when the mathematical model contains indexed variables or parameters that are accessed with indices not present in the corresponding data structures. For example, when the formulation included a cost dictionary without (i, i) pairs but attempted to access cost[i, j] for all pairs (i, j) in N x N."
+      },
+      "Matrix Dimension Mismatch": {
+        "definition": "When the problem involves defining variable bounds with matrices. The best practice is to ensure that the matrix dimensions align with the variable indices. A common mistake is to use a scalar or an incorrectly dimensioned matrix as bounds, which happens because the programmer assumes uniformity across dimensions without checking compatibility. More generally, this reflects that correct data structure dimensions a...",
+        "condition": "This insight applies when the mathematical model contains matrices or arrays that define bounds or parameters for variables, and these must be dimensionally compatible with the variable definitions. For example, when the formulation included an upper bound matrix for flow variables that must match the dimensionality of the node pairs."
+      }
+    }
+  }
+}

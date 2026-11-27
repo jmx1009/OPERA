@@ -1,0 +1,37 @@
+# LAFLOR cases in the manuscript
+
+LAFLOR contains 152 tasks, numbered `LAFLOR_001` through `LAFLOR_152`. This catalog includes the 20 tasks discussed in the manuscript.
+
+Each row links to the task's problem, formulation and executable reference. The verified result comes from solving the linked problem. The evidence column identifies where the manuscript discusses each task ID. The objectives and grading targets apply to the problem statements linked below. [Task manifest](manifest.json)
+
+| Task | Formulation and code | Verified result | Evidence in the manuscript | Independent check |
+| --- | --- | ---: | --- | --- |
+| [LAFLOR_005](LAFLOR_005/problem.md) · Two-stage relief inventory and drone assignment | [Model](LAFLOR_005/formulation.md) · [Code](LAFLOR_005/reference.py) | 825 | lesson135 refinement | Two-stage MILP and a capacity relaxation attained by a feasible assignment |
+| [LAFLOR_019](LAFLOR_019/problem.md) · Bilevel freight-network design | [Model](LAFLOR_019/formulation.md) · [Code](LAFLOR_019/reference.py) | 23 | lesson265 round 4 retrieval analysis | Enumeration of feasible network topologies and operating costs |
+| [LAFLOR_022](LAFLOR_022/problem.md) · Coverage and charging-station network design | [Model](LAFLOR_022/formulation.md) · [Code](LAFLOR_022/reference.py) | 0.357372 | lesson265 round 4 retrieval analysis | Enumeration of active nodes and shortest paths |
+| [LAFLOR_043](LAFLOR_043/problem.md) · Specimen pickups from a scheduled laboratory van | [Model](LAFLOR_043/formulation.md) · [Code](LAFLOR_043/reference.py) | 61 USD | lesson265 round 4 retrieval analysis | All 243 clinic assignments with interval and battery checks |
+| [LAFLOR_048](LAFLOR_048/problem.md) · Vertiport siting with split deliveries and service commitments | [Model](LAFLOR_048/formulation.md) · [Code](LAFLOR_048/reference.py) | 286 | lesson8 and lesson265 refinement | All ten site triples, accepted-order subsets and customer-to-site network cuts |
+| [LAFLOR_062](LAFLOR_062/problem.md) · Shuttle and on-demand vertiport coverage | [Model](LAFLOR_062/formulation.md) · [Code](LAFLOR_062/reference.py) | 160 | lesson265 round 4 retrieval analysis | Enumeration of feasible opening sets and the route activation rule |
+| [LAFLOR_073](LAFLOR_073/problem.md) · Freight routing with shared corridor capacities | [Model](LAFLOR_073/formulation.md) · [Code](LAFLOR_073/reference.py) | 36.7884 | lesson265 round 4 retrieval analysis | Feasible interval for direct shipments and the routing costs at its endpoints |
+| [LAFLOR_076](LAFLOR_076/problem.md) · Charging stations with two independent supply routes | [Model](LAFLOR_076/formulation.md) · [Code](LAFLOR_076/reference.py) | 0.540956 | lesson265 round 4 retrieval analysis | Station sets, covering terminals and pairs of disjoint simple paths |
+| [LAFLOR_077](LAFLOR_077/problem.md) · Medical distribution centers and worst-case patient latency | [Model](LAFLOR_077/formulation.md) · [Code](LAFLOR_077/reference.py) | 40 | lesson265 round 1 follow-up | A shortest-path lower bound attained by ordered visits |
+| [LAFLOR_087](LAFLOR_087/problem.md) · Fleet, battery and charger design for daily ownership cost | [Model](LAFLOR_087/formulation.md) · [Code](LAFLOR_087/reference.py) | 572.782691 | lesson8 and lesson135 refinement | Fleet MILP and enumeration of designs, battery masses and recharge requirements |
+| [LAFLOR_099](LAFLOR_099/problem.md) · Disaster response with uncertainty in truck and drone travel | [Model](LAFLOR_099/formulation.md) · [Code](LAFLOR_099/reference.py) | 0.608114 | lesson8 refinement | A response-time relaxation and a feasible robust flight certificate |
+| [LAFLOR_101](LAFLOR_101/problem.md) · Vertiport siting with daily ground-handling limits | [Model](LAFLOR_101/formulation.md) · [Code](LAFLOR_101/reference.py) | 21 | lesson265 first-round exclusion | All site triples and capacity-feasible whole-zone assignments |
+| [LAFLOR_106](LAFLOR_106/problem.md) · Road-monitoring routes with conditional station activation | [Model](LAFLOR_106/formulation.md) · [Code](LAFLOR_106/reference.py) | 320 | lesson265 round 4 retrieval analysis | Range-feasible tours and a set-partition lower bound |
+| [LAFLOR_116](LAFLOR_116/problem.md) · Skyport siting with intersecting passenger flows | [Model](LAFLOR_116/formulation.md) · [Code](LAFLOR_116/reference.py) | 4957.106781 | lesson265 round 4 retrieval analysis | Port and mode enumeration against a quadratic assignment model |
+| [LAFLOR_118](LAFLOR_118/problem.md) · Skyport choice under a corridor exclusion | [Model](LAFLOR_118/formulation.md) · [Code](LAFLOR_118/reference.py) | 1499.99966 | lesson135 refinement | Logit evaluation of the two permissible markets |
+| [LAFLOR_124](LAFLOR_124/problem.md) · Charging cargo-aircraft packs under a shared demand tariff | [Model](LAFLOR_124/formulation.md) · [Code](LAFLOR_124/reference.py) | 1,470 cents | lesson265 round 4 retrieval analysis | Per-bay pack simulation and exhaustive pairing under the meter limit |
+| [LAFLOR_136](LAFLOR_136/problem.md) · Synchronized truck and drone parcel delivery | [Model](LAFLOR_136/formulation.md) · [Code](LAFLOR_136/reference.py) | 49.790368 | lesson265 round 4 retrieval analysis | A feasible synchronized tour attaining a truck-only time lower bound |
+| [LAFLOR_144](LAFLOR_144/problem.md) · Airspace scheduling with a mandatory alternative path | [Model](LAFLOR_144/formulation.md) · [Code](LAFLOR_144/reference.py) | 0.5 | lesson265 round 4 retrieval analysis | A feasible schedule attaining the forced-path cost lower bound |
+| [LAFLOR_145](LAFLOR_145/problem.md) · Payload-dependent flight energy with mandatory drone service | [Model](LAFLOR_145/formulation.md) · [Code](LAFLOR_145/reference.py) | 23.038041 | lesson363 case study and applicability refinement for lesson8, lesson135 and lesson265 | Arc-based Gurobi model, depot-route enumeration and a moving-truck lower bound |
+| [LAFLOR_152](LAFLOR_152/problem.md) · Joint fare and pad design with endogenous demand and waiting | [Model](LAFLOR_152/formulation.md) · [Code](LAFLOR_152/reference.py) | 220.767615 | principle18 case study | 81-design enumeration and an independent nonlinear equilibrium solve |
+
+## Case study cross-checks
+
+- **LAFLOR_152.** Each transfer itinerary requests service twice at the hub. Waiting time enters the Logit utility, which determines demand and hence the waiting time. All 81 candidate designs are evaluated at that fixed point. Screening at zero wait keeps only 12 and yields a best profit of 114.592318. At the true optimum, the waits at A, H and B are approximately 3.3652, 1.3290 and 3.8214 minutes.
+- **LAFLOR_145.** The paper uses customer 3 at (4, 5), requires drone service there and counts flight energy on each selected leg. At the optimum the drone uses 418.5648 Wh on a single sortie and the truck waits at the depot.
+
+## Numerical scoring
+
+The public training, evaluation and independent verification commands all load the same 20 examples. The manifest gives each verified objective at full precision and lists the manuscript reference where one is reported. For LAFLOR_118, the paper uses a reference of 1,500. The full-precision Logit calculation gives 1,499.9996600731, an absolute error of about 0.00034. Under the default absolute tolerance of 0.1 objective units, the scores of 0.35737 for LAFLOR_022 and 0.54096 for LAFLOR_076 have overlapping acceptance intervals. For example, 0.45 passes the numerical check for either task. [Task manifest](manifest.json)

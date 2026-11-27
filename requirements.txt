@@ -1,0 +1,11 @@
+gurobipy>=12.0
+openai>=1.70
+httpx>=0.27
+omegaconf>=2.3
+python-dotenv>=1.0
+PyYAML>=6.0
+numpy>=1.26
+pandas>=2.1
+scikit-learn>=1.4
+tqdm>=4.65
+scipy>=1.11

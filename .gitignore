@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+.venv/
+.env
+.env.*
+.DS_Store
+data/domain_corpus/
+learning/
+testing/
+runs/
+*.log
+*.lp
+*.ilp
+*.sol

@@ -1,0 +1,41 @@
+dataset: laflor_public
+data_path: data/laflor/manifest.json
+library_path: data/libraries/lessons.json
+standalone_lesson_library_path: runs/opera_public_lessons_only/library/library_refine_iter4.json
+taxonomy_path: data/libraries/lesson_taxonomy.json
+output_folder: opera_public
+model: gpt-4o
+service: openai
+temperature: 0.0
+pass_at_k: 1
+evaluation_runs: 3
+tolerance_mode: absolute
+tolerance: 0.1
+max_workers: 2
+retrieval_batch_size: 20
+bootstrap:
+  enable_principle_library: true
+  rebuild_document_index: false
+  consolidated_principles_path: data/libraries/principles.json
+  principle_taxonomy_path: data/libraries/principle_taxonomy.json
+  corpus_root: ./data/domain_corpus
+  document_index_path: data/knowledge/summaries.json
+  candidate_principles_path: data/knowledge/candidates.json
+  candidate_taxonomy_path: data/knowledge/candidate_taxonomy.json
+  chunk_words: 500
+  overlap_words: 75
+  leaf_text_chars: 2400
+  summary_group_size: 5
+  extraction_max_level: 2
+  max_level1_units_per_doc: 8
+  max_level2_units_per_doc: 5
+  long_doc_chunk_threshold: 120
+  source_unit_selection_method: modeling_density_diversity
+  summaries_per_task: 6
+  task_specific_insight_limit: 4
+  max_candidate_principles_per_summary: 5
+ablation:
+  taxonomy: true
+  include_example: true
+  include_program_insight: true
+  max_debug_retry: 0

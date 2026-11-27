@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+message: "Please cite the accompanying manuscript when using OPERA."
+type: software
+title: "OPERA"
+authors:
+  - family-names: Jiang
+    given-names: Maoxin
+  - family-names: Li
+    given-names: Junyi
+  - family-names: Chen
+    given-names: Xiqun
+license: MIT
+preferred-citation:
+  type: unpublished
+  title: "Automated optimization modeling for low-altitude air mobility: A self-evolving LLM insight library framework"
+  authors:
+    - family-names: Jiang
+      given-names: Maoxin
+    - family-names: Li
+      given-names: Junyi
+    - family-names: Chen
+      given-names: Xiqun
